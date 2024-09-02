@@ -1,0 +1,16 @@
+{
+  "name": "@rindeal/git-remote-ref-compare",
+  "version": "0.1.0",
+  "license": "GPL-3.0-only OR GPL-2.0-only",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc && terser dist/index.js -o dist/index.min.js --source-map"
+  },
+  "devDependencies": {
+    "@tsconfig/node20": "^20.1.4",
+    "@types/node": "^22.5.2",
+    "terser": "^5.31.6",
+    "typescript": "^5.0.0"
+  }
+}
