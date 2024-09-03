@@ -1,20 +1,23 @@
-# git-remote-ref-compare
+# 🌟 git-remote-ref-compare 🌟
 
-A modern and efficient library for comparing Git repositories by their references.
+A modern and efficient TypeScript library for comparing remote Git repositories for equality by their references.
 
-## Features
+## 🚀 Features
 
-- Fetch and compare Git references from remote repositories.
-- Identify differences in reference counts, names, and hashes.
-- Handle critical errors gracefully.
+- 🔍 Fetch and compare Git references from remote repositories asynchronously.
+- 📊 Identify differences in reference counts, names, and hashes, with detailed messages.
+- ⚠️ Robust input validation.
+- No runtime dependencies
 
-## Installation
+## 📦 Installation
+
+Install via npm:
 
 ```bash
-npm install git-remote-ref-compare
+npm install https://github.com/rindeal-js/git-remote-ref-compare
 ```
 
-## Usage
+## 🛠️ Quick Start
 
 ```ts
 import { GitRepo, RefDiffTypes } from 'git-remote-ref-compare'
@@ -41,7 +44,7 @@ const targetRepo = new GitRepo('https://github.com/facsimiles/beautifulsoup.git'
 })()
 ```
 
-## API
+## 📚 API
 
 ```ts
 // Represents a Git repository
@@ -83,10 +86,10 @@ class RefDiff {
 }
 ```
 
-## Contributing
+## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## License
+## 📜 License
 
 This project is licensed under the _GPL-3.0-only OR GPL-2.0-only_ License. See the [LICENSE.md](./LICENSE.md) file for details.
