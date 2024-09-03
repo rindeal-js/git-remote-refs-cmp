@@ -6,7 +6,7 @@ Useful to quickly check (1-2s) if a repository mirror is up to date.
 ## 🚀 Features
 
 - 🔍 Fetch and compare Git references from remote repositories asynchronously.
-- 📊 Identify differences in reference counts, names, and hashes, with detailed messages.
+- 📊 Identify differences in reference counts, names, and hashes, with detailed messages when encountering differences.
 - ⚠️ Robust input validation.
 - No runtime dependencies
 
