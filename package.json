@@ -8,7 +8,7 @@
     "build": "tsc && terser dist/index.js -o dist/index.min.js --source-map"
   },
   "devDependencies": {
-    "@tsconfig/node20": "^1.0.0",
+    "@tsconfig/node20": "^20.1.4",
     "@types/node": "^22.5.2",
     "terser": "^5.31.6",
     "typescript": "^5.0.0"
