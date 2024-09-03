@@ -87,10 +87,11 @@ class RefDiffTypes {
 
 ## Limitations
 
-- Only remote Git repositories are supported
-- Only `https://` protocol is supported
-- No extra credentials handling
+- Only remote Git repositories are supported.
+- Only `https://` protocol is supported.
+- No extra credentials handling.
   - You need to use native Git HTTPS authentication methods if you want to compare private repos.
+- Only equality comparison, it cannot tell you which one is older/newer.
 
 ## 🤝 Contributing
 
