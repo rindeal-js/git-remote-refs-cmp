@@ -59,7 +59,13 @@ class GitRepo {
         Logger.error(errorMsg)
         throw new Error(errorMsg)
       }
-      execFile('git', ['ls-remote', this.repoUrl], {}, (error, stdout/*, stderr*/) => {
+      // --quiet
+      //   Do not print remote URL to stderr.
+      // --exit-code
+      //   Exit with status "2" when no matching refs are found in the remote repository.
+      //   Usually the command exits with status "0" to indicate it successfully talked with the remote repository,
+      //   whether it found any matching refs.
+      execFile('git', ['ls-remote', '--quiet' , '--exit-code', '--', this.repoUrl], {}, (error, stdout/*, stderr*/) => {
         if ( error ) {
           Logger.error(`Error fetching refs for \`${this.repoUrl}\`: \`${error.message}\``)
           reject(error)
