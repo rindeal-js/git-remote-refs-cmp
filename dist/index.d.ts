@@ -3,6 +3,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only OR GPL-2.0-only
  */
+import { Logger } from './logger';
 interface Ref {
     name: string;
     hash: string;
@@ -34,4 +35,4 @@ declare class GitRepo {
     getRefByHash(hash: string): Promise<Ref | undefined>;
     refsDiffer(targetRepo: GitRepo): Promise<RefDiff | null>;
 }
-export { Ref, RefDiffTypes, RefDiff, GitRepo };
+export { Ref, RefDiffTypes, RefDiff, GitRepo, Logger };
