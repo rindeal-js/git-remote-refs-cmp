@@ -1,6 +1,7 @@
 # 🌟 git-remote-ref-compare 🌟
 
-A modern and efficient TypeScript library for comparing remote Git repositories for equality by their references.
+An efficient TypeScript micro library for comparing remote Git repositories for equality by their references.
+Useful to quickly check (1-2s) if a repository mirror is up to date.
 
 ## 🚀 Features
 
