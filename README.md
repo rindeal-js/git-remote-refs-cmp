@@ -58,10 +58,19 @@ class GitRepo {
 }
 
 // Represents a Git reference
-class Ref {
+interface Ref {
   name: string
   hash: string
-  constructor(name: string, hash: string)
+}
+
+// Represents the difference between references
+class RefDiff {
+  message: string
+  type: RefDiffTypes
+  sourceRefs: Ref[]
+  targetRefs: Ref[]
+  sourceRef: Ref | null
+  targetRef: Ref | null
 }
 
 // Types of reference differences
@@ -73,16 +82,6 @@ class RefDiffTypes {
   name: string
   constructor(name: string)
   toString(): string  // Returns the name of the RefDiffTypes instance, eg. `REF_NOT_FOUND`
-}
-
-// Represents the difference between references
-class RefDiff {
-  message: string
-  type: RefDiffTypes
-  sourceRefs: Ref[]
-  targetRefs: Ref[]
-  sourceRef: Ref | null
-  targetRef: Ref | null
 }
 ```
 
