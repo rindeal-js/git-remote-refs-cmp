@@ -17,46 +17,20 @@ class Ref {
   }
 }
 
-class RefDiffTypes {
+class RefDiffTypes extends String {
   static refCountMismatch = new RefDiffTypes('REF_COUNT_MISMATCH')
   static refNotFound      = new RefDiffTypes('REF_NOT_FOUND')
   static hashMismatch     = new RefDiffTypes('HASH_MISMATCH')
   static criticalError    = new RefDiffTypes('CRITICAL_ERROR')
-
-  name: string
-
-  constructor(name: string) {
-    this.name = name
-  }
-
-  toString() {
-    return this.name
-  }
 }
 
 class RefDiff {
-  message: string
-  type: RefDiffTypes
-  sourceRefs: Ref[]
-  targetRefs: Ref[]
-  sourceRef: Ref | null
-  targetRef: Ref | null
-
-  constructor(
-    message: string,
-    type: RefDiffTypes,
-    sourceRefs: Ref[],
-    targetRefs: Ref[],
-    sourceRef: Ref | null,
-    targetRef: Ref | null,
-  ) {
-    this.message  = message
-    this.type     = type
-    this.sourceRefs = sourceRefs
-    this.targetRefs = targetRefs
-    this.sourceRef  = sourceRef
-    this.targetRef = targetRef
-  }
+  message: string = ''
+  type: RefDiffTypes = ''
+  sourceRefs: Ref[] = []
+  targetRefs: Ref[] = []
+  sourceRef: Ref | null = null
+  targetRef: Ref | null = null
 }
 
 class GitRepo {
@@ -79,6 +53,9 @@ class GitRepo {
 
   async fetchRefs(): Promise<Ref[]> {
     // console.log(`fetchRefs() for \`${this.repoUrl}\``)
+    if ( ! this.repoUrl.startsWith("https://") ) {
+      throw new Error("URL doesn't start with https://: " + this.repoUrl)
+    }
     const result = await new Promise<string>((resolve, reject) => {
       execFile('git', ['ls-remote', this.repoUrl], (error, stdout, stderr) => {
         if ( error ) {
@@ -131,52 +108,38 @@ class GitRepo {
       targetRepo.getRefs(),
     ])
 
+    const refDiff = new RefDiff()
+    refDiff.sourceRefs = sourceRefs
+    refDiff.targetRefs = targetRefs
+
     if ( sourceRefs.length === 0 || targetRefs.length === 0 ) {
-      return new RefDiff(
-        `Critical error: One or both repositories have zero refs.`,
-        RefDiffTypes.criticalError,
-        sourceRefs,
-        targetRefs,
-        null,
-        null,
-      )
+      refDiff.message = `Critical error: One or both repositories have zero refs.`
+      refDiff.type = RefDiffTypes.criticalError
+      return refDiff
     }
 
     if ( sourceRefs.length !== targetRefs.length ) {
-      return new RefDiff(
-        `Ref count mismatch: source repo has \`${sourceRefs.length}\` refs, target repo has \`${targetRefs.length}\` refs.`,
-        RefDiffTypes.refCountMismatch,
-        sourceRefs,
-        targetRefs,
-        null,
-        null,
-      )
+      refDiff.message = `Ref count mismatch: source repo has \`${sourceRefs.length}\` refs, target repo has \`${targetRefs.length}\` refs.`
+      refDiff.type = RefDiffTypes.refCountMismatch
+      return refDiff
     }
 
     for (const sourceRef of sourceRefs) {
       const targetRef = await targetRepo.getRefByName(sourceRef.name)
       if ( ! targetRef ) {
-        return new RefDiff(
-          `Ref not found: \`${sourceRef.name}\` is missing in the target repo.`,
-          RefDiffTypes.refNotFound,
-          sourceRefs,
-          targetRefs,
-          sourceRef,
-          null,
-        )
+        refDiff.message = `Ref not found: \`${sourceRef.name}\` is missing in the target repo.`
+        refDiff.type = RefDiffTypes.refNotFound
+        refDiff.sourceRef = sourceRef
+        return refDiff
       }
       if ( sourceRef.hash !== targetRef.hash ) {
-        return new RefDiff(
-          `Hash mismatch for ref \`${sourceRef.name}\`: source repo has \`${sourceRef.hash}\`, target repo has \`${targetRef.hash}\`.`,
-          RefDiffTypes.hashMismatch,
-          sourceRefs,
-          targetRefs,
-          sourceRef,
-          targetRef,
-        )
+        refDiff.message = `Hash mismatch for ref \`${sourceRef.name}\`: source repo has \`${sourceRef.hash}\`, target repo has \`${targetRef.hash}\`.`
+        refDiff.type = RefDiffTypes.hashMismatch
+        refDiff.sourceRef = sourceRef
+        refDiff.targetRef = targetRef
+        return refDiff
       }
     }
-
     return null
   }
 }
@@ -198,6 +161,7 @@ if ( require.main === module ) {
     if ( diffResult ) {
       console.log('The repositories differ:')
       console.log(diffResult)
+      console.log(diffResult.type.toString())
     } else {
       console.log('The repositories are exact clones.')
     }

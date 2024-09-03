@@ -8,14 +8,11 @@ declare class Ref {
     hash: string;
     constructor(name: string, hash: string);
 }
-declare class RefDiffTypes {
+declare class RefDiffTypes extends String {
     static refCountMismatch: RefDiffTypes;
     static refNotFound: RefDiffTypes;
     static hashMismatch: RefDiffTypes;
     static criticalError: RefDiffTypes;
-    name: string;
-    constructor(name: string);
-    toString(): string;
 }
 declare class RefDiff {
     message: string;
@@ -24,7 +21,6 @@ declare class RefDiff {
     targetRefs: Ref[];
     sourceRef: Ref | null;
     targetRef: Ref | null;
-    constructor(message: string, type: RefDiffTypes, sourceRefs: Ref[], targetRefs: Ref[], sourceRef: Ref | null, targetRef: Ref | null);
 }
 declare class GitRepo {
     repoUrl: string;
