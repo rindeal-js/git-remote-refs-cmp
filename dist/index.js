@@ -5,17 +5,8 @@
  * SPDX-License-Identifier: GPL-3.0-only OR GPL-2.0-only
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GitRepo = exports.RefDiff = exports.RefDiffTypes = exports.Ref = void 0;
+exports.GitRepo = exports.RefDiff = exports.RefDiffTypes = void 0;
 const child_process_1 = require("child_process");
-class Ref {
-    name;
-    hash;
-    constructor(name, hash) {
-        this.name = name;
-        this.hash = hash;
-    }
-}
-exports.Ref = Ref;
 class RefDiffTypes extends String {
     static refCountMismatch = new RefDiffTypes('REF_COUNT_MISMATCH');
     static refNotFound = new RefDiffTypes('REF_NOT_FOUND');
@@ -50,11 +41,11 @@ class GitRepo {
     }
     async fetchRefs() {
         // console.log(`fetchRefs() for \`${this.repoUrl}\``)
-        if (!this.repoUrl.startsWith("https://")) {
-            throw new Error("URL doesn't start with https://: " + this.repoUrl);
-        }
         const result = await new Promise((resolve, reject) => {
-            (0, child_process_1.execFile)('git', ['ls-remote', this.repoUrl], (error, stdout, stderr) => {
+            if (!this.repoUrl.startsWith("https://")) {
+                throw new Error("URL doesn't start with https://: " + this.repoUrl);
+            }
+            (0, child_process_1.execFile)('git', ['ls-remote', this.repoUrl], {}, (error, stdout /*, stderr*/) => {
                 if (error) {
                     // console.error(`Error fetching refs for \`${this.repoUrl}\``)
                     reject(error);
@@ -68,7 +59,7 @@ class GitRepo {
             .filter(line => line)
             .map(line => {
             const [hash, name] = line.split('\t');
-            return new Ref(name, hash);
+            return { name, hash };
         });
         this._refs = refs;
         return refs;

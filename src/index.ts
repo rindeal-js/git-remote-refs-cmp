@@ -7,14 +7,9 @@
 import { execFile } from 'child_process'
 
 
-class Ref {
+interface Ref {
   name: string
   hash: string
-
-  constructor(name: string, hash: string) {
-    this.name = name
-    this.hash = hash
-  }
 }
 
 class RefDiffTypes extends String {
@@ -53,11 +48,11 @@ class GitRepo {
 
   async fetchRefs(): Promise<Ref[]> {
     // console.log(`fetchRefs() for \`${this.repoUrl}\``)
-    if ( ! this.repoUrl.startsWith("https://") ) {
-      throw new Error("URL doesn't start with https://: " + this.repoUrl)
-    }
     const result = await new Promise<string>((resolve, reject) => {
-      execFile('git', ['ls-remote', this.repoUrl], (error, stdout, stderr) => {
+      if ( ! this.repoUrl.startsWith("https://") ) {
+        throw new Error("URL doesn't start with https://: " + this.repoUrl)
+      }
+      execFile('git', ['ls-remote', this.repoUrl], {}, (error, stdout/*, stderr*/) => {
         if ( error ) {
           // console.error(`Error fetching refs for \`${this.repoUrl}\``)
           reject(error)
@@ -70,7 +65,7 @@ class GitRepo {
       .filter(line => line)
       .map(line => {
         const [hash, name] = line.split('\t')
-        return new Ref(name, hash)
+        return {name, hash}
       })
     this._refs = refs
     return refs

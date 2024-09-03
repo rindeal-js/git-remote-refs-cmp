@@ -3,10 +3,9 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only OR GPL-2.0-only
  */
-declare class Ref {
+interface Ref {
     name: string;
     hash: string;
-    constructor(name: string, hash: string);
 }
 declare class RefDiffTypes extends String {
     static refCountMismatch: RefDiffTypes;

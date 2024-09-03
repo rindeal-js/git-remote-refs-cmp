@@ -8,6 +8,8 @@ path = [
     "*.toml",
     "*.yml",
     "*.json",
+    "*.config.js",
+    "*.config.mjs",
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "Public Domain"
