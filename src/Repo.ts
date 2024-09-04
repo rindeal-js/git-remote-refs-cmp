@@ -4,85 +4,14 @@
  * SPDX-License-Identifier: GPL-3.0-only OR GPL-2.0-only
  */
 
-import { Logger } from './logger'
-
-import { execFile } from 'child_process'
-
-
-export interface Ref {
-  name: string
-  hash: string
-}
+import { Logger } from './Logger'
+import { Ref } from './Ref'
+import { RefDiff , ZeroRefs , RefCountMismatch , RefNotFound , HashMismatch } from './RefDiff'
+import { GitCommandManager } from './GitCommandManager'
 
 
 const gitOidRegExp = /^[0-9a-f]{40}$/
 const gitRefRegExp = /^(?:refs\/(?:heads|tags|remotes)\/|HEAD$)/
-
-
-export class RefDiff {
-  type: string = 'NO_TYPE'
-  sourceRepo: Repo
-  targetRepo: Repo
-  sourceRef?: Ref
-  targetRef?: Ref
-
-  constructor(init: {sourceRepo: Repo, targetRepo: Repo, sourceRef?: Ref, targetRef?: Ref}) {
-    this.sourceRepo = init.sourceRepo
-    this.targetRepo = init.targetRepo
-    this.sourceRef = init.sourceRef
-    this.targetRef = init.targetRef
-  }
-
-  getMessage(): Promise<string> { throw new Error("Method not implemented.") }
-}
-
-export class ZeroRefs extends RefDiff {
-  type: string = 'ZERO_REFS'
-
-  async getMessage(): Promise<string> {
-    const srcUrl = this.sourceRepo.url
-    const dstUrl = this.targetRepo.url
-    const srcRefsLen = (await this.sourceRepo.getRefs()).length
-    const dstRefsLen = (await this.targetRepo.getRefs()).length
-    return `Zero refs: \`${srcUrl}\` has \`${srcRefsLen}\` refs, \`${dstUrl}\` has \`${dstRefsLen}\` refs.`
-  }
-}
-
-export class RefCountMismatch extends RefDiff {
-  type: string = 'REF_COUNT_MISMATCH'
-
-  async getMessage(): Promise<string> {
-    const srcUrl = this.sourceRepo.url
-    const dstUrl = this.targetRepo.url
-    const srcRefsLen = (await this.sourceRepo.getRefs()).length
-    const dstRefsLen = (await this.targetRepo.getRefs()).length
-    return `Ref count mismatch: \`${srcUrl}\` has \`${srcRefsLen}\` refs, \`${dstUrl}\` has \`${dstRefsLen}\` refs.`
-  }
-}
-
-export class RefNotFound extends RefDiff {
-  type: string = 'REF_NOT_FOUND'
-
-  async getMessage(): Promise<string> {
-    if ( ! this.sourceRef ) {
-      throw new Error('sourceRef is not initialized');
-    }
-    return `Ref not found: \`${this.sourceRef.name}\` is missing in \`${this.targetRepo.url}\`.`
-  }
-}
-
-export class HashMismatch extends RefDiff {
-  type: string = 'HASH_MISMATCH'
-
-  async getMessage(): Promise<string> {
-    const srcRef = this.sourceRef
-    const dstRef = this.targetRef
-    if ( ! srcRef || ! dstRef ) {
-      throw new Error('sourceRef or targetRef is not initialized');
-    }
-    return `Hash mismatch for ref \`${srcRef.name}\`: source repo has \`${srcRef.hash}\`, target repo has \`${dstRef.hash}\`.`
-  }
-}
 
 
 export class Repo {
@@ -90,9 +19,11 @@ export class Repo {
   private _refs?: Ref[]
   private _refNameIndex?: Map<string, Ref>
   private _refHashIndex?: Map<string, Ref>
+  private gitManager: GitCommandManager
 
-  constructor(repoUrl: string) {
+  constructor(repoUrl: string, gitManager: GitCommandManager) {
     this.url = repoUrl
+    this.gitManager = gitManager
     Logger.info(`GitLsRemote.Repo instance created for \`${repoUrl}\``)
   }
 
@@ -108,24 +39,7 @@ export class Repo {
 
   async fetchRefs(): Promise<Ref[]> {
     Logger.trace(`fetchRefs() called for \`${this.url}\``)
-    const result = await new Promise<string>((resolve, reject) => {
-      if ( ! this.url.startsWith("https://") ) {
-        const errorMsg = `URL doesn't start with https://: \`${this.url}\``
-        Logger.error(errorMsg)
-        throw new Error(errorMsg)
-      }
-      Logger.debug(`Executing \`git ls-remote\` for \`${this.url}\``)
-      execFile('git', ['ls-remote', '--quiet', '--exit-code', '--', this.url], {}, (error, stdout/*, stderr*/) => {
-        if ( error ) {
-          Logger.error(`Error fetching refs for \`${this.url}\`: \`${error.message}\``)
-          reject(error)
-        } else {
-          Logger.info(`Successfully fetched refs for \`${this.url}\``)
-          resolve(stdout)
-        }
-      })
-    })
-  
+    const result = await this.gitManager.lsRemote({ repository: this.url, exitCode: true })
     const refs = result.split('\n')
       .map(line => {
         const [hash, name] = line.split('\t')
@@ -147,12 +61,11 @@ export class Repo {
         Logger.silly(`Parsed ref: \`${name}\` with hash: \`${hash}\` from \`${this.url}\``)
         return { name, hash }
       })
-  
+
     this._refs = refs
     Logger.debug(`Fetched \`${refs.length}\` refs for \`${this.url}\``)
     return refs
   }
-
 
   async _buildRefIndexes() {
     Logger.trace(`GitLsRemote.Repo._buildRefIndexes() called for \`${this.url}\``)
