@@ -14,6 +14,11 @@ export interface Ref {
   hash: string
 }
 
+
+const gitOidRegExp = /^[0-9a-f]{40}$/
+const gitRefRegExp = /^(?:refs\/(?:heads|tags|remotes)\/|HEAD$)/
+
+
 export class RefDiff {
   type: string = 'NO_TYPE'
   sourceRepo: Repo
@@ -110,7 +115,7 @@ export class Repo {
         throw new Error(errorMsg)
       }
       Logger.debug(`Executing \`git ls-remote\` for \`${this.url}\``)
-      execFile('git', ['ls-remote', '--quiet' , '--exit-code', '--', this.url], {}, (error, stdout/*, stderr*/) => {
+      execFile('git', ['ls-remote', '--quiet', '--exit-code', '--', this.url], {}, (error, stdout/*, stderr*/) => {
         if ( error ) {
           Logger.error(`Error fetching refs for \`${this.url}\`: \`${error.message}\``)
           reject(error)
@@ -120,17 +125,34 @@ export class Repo {
         }
       })
     })
+  
     const refs = result.split('\n')
-      .filter(line => line)
       .map(line => {
         const [hash, name] = line.split('\t')
+        if ( ! hash || ! name ) {
+          const errorMsg = `Invalid \`git ls-remote\` output line: \`${line}\``
+          Logger.error(errorMsg)
+          throw new Error(errorMsg)
+        }
+        if ( ! gitOidRegExp.test(hash) ) {
+          const errorMsg = `Invalid Git OID hash: \`${hash}\``
+          Logger.error(errorMsg)
+          throw new Error(errorMsg)
+        }
+        if ( ! gitRefRegExp.test(name) ) {
+          const errorMsg = `Invalid Git ref name: \`${name}\``
+          Logger.error(errorMsg)
+          throw new Error(errorMsg)
+        }
         Logger.silly(`Parsed ref: \`${name}\` with hash: \`${hash}\` from \`${this.url}\``)
-        return {name, hash}
+        return { name, hash }
       })
+  
     this._refs = refs
     Logger.debug(`Fetched \`${refs.length}\` refs for \`${this.url}\``)
     return refs
   }
+
 
   async _buildRefIndexes() {
     Logger.trace(`GitLsRemote.Repo._buildRefIndexes() called for \`${this.url}\``)
