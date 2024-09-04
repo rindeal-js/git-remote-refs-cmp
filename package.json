@@ -1,11 +1,11 @@
 {
   "name": "@rindeal/git-remote-ref-compare",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "GPL-3.0-only OR GPL-2.0-only",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "npx -- tsc --pretty && npx -- terser dist/index.js -o dist/index.min.js --source-map",
+    "build": "npx -- tsc --strict --pretty",
     "test": "npx -- jest --color",
     "lint": "npm run -- lint:eslint",
     "lint:eslint": "npx -- eslint --color -- src/",
@@ -17,8 +17,6 @@
     "@types/jest": "^29.5.12",
     "@types/node": "^22.5.2",
     "eslint": "^9.9.1",
-    "globals": "^15.9.0",
-    "terser": "^5.31.6",
     "ts-jest": "^29.2.5",
     "typescript": "^5.0.0",
     "typescript-eslint": "^8.4.0"

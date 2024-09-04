@@ -4,24 +4,46 @@
  * SPDX-License-Identifier: GPL-3.0-only OR GPL-2.0-only
  */
 
-import { RefDiff, RefDiffTypes } from '../index';
+import { ZeroRefs, RefCountMismatch, RefNotFound, HashMismatch, Repo, Ref } from '../repo';
+
 
 describe('RefDiff', () => {
-  test('should create a RefDiff instance', () => {
-    const refDiff = new RefDiff();
-    expect(refDiff.message).toBe('');
-    expect(refDiff.type).toBe('');
-    expect(refDiff.sourceRefs).toEqual([]);
-    expect(refDiff.targetRefs).toEqual([]);
-    expect(refDiff.sourceRef).toBeNull();
-    expect(refDiff.targetRef).toBeNull();
+  let sourceRepo: Repo;
+  let targetRepo: Repo;
+
+  beforeEach(() => {
+    sourceRepo = new Repo('https://source.repo.url');
+    targetRepo = new Repo('https://target.repo.url');
   });
 
-  test('should set RefDiff type correctly', () => {
-    const refDiff = new RefDiff();
-    refDiff.type = RefDiffTypes.hashMismatch;
-    expect(refDiff.type).toBe(RefDiffTypes.hashMismatch);
+  test('ZeroRefs getMessage', async () => {
+    const zeroRefs = new ZeroRefs({ sourceRepo, targetRepo });
+    jest.spyOn(sourceRepo, 'getRefs').mockResolvedValue([]);
+    jest.spyOn(targetRepo, 'getRefs').mockResolvedValue([]);
+    const message = await zeroRefs.getMessage();
+    expect(message).toBe('Zero refs: `https://source.repo.url` has `0` refs, `https://target.repo.url` has `0` refs.');
   });
 
-  // Add more tests as needed
+  test('RefCountMismatch getMessage', async () => {
+    const refCountMismatch = new RefCountMismatch({ sourceRepo, targetRepo });
+    jest.spyOn(sourceRepo, 'getRefs').mockResolvedValue([{ name: 'ref1', hash: 'hash1' }]);
+    jest.spyOn(targetRepo, 'getRefs').mockResolvedValue([]);
+    const message = await refCountMismatch.getMessage();
+    expect(message).toBe('Ref count mismatch: `https://source.repo.url` has `1` refs, `https://target.repo.url` has `0` refs.');
+  });
+
+  test('RefNotFound getMessage', async () => {
+    const sourceRef: Ref = { name: 'ref1', hash: 'hash1' };
+    const refNotFound = new RefNotFound({ sourceRepo, targetRepo, sourceRef });
+    const message = await refNotFound.getMessage();
+    expect(message).toBe('Ref not found: `ref1` is missing in `https://target.repo.url`.');
+  });
+
+  test('HashMismatch getMessage', async () => {
+    const sourceRef: Ref = { name: 'ref1', hash: 'hash1' };
+    const targetRef: Ref = { name: 'ref1', hash: 'hash2' };
+    const hashMismatch = new HashMismatch({ sourceRepo, targetRepo, sourceRef, targetRef });
+    const message = await hashMismatch.getMessage();
+    expect(message).toBe('Hash mismatch for ref `ref1`: source repo has `hash1`, target repo has `hash2`.');
+  });
 });
