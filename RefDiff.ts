@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-only OR GPL-2.0-only
  */
 
-import { Ref } from './ref'
-import { Repo } from './repo'
+import { Ref } from './Ref'
+import { Repo } from './Repo'
 
 
 export class RefDiff {
