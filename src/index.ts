@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: GPL-3.0-only OR GPL-2.0-only
  */
 
-import { Repo , RefDiff } from './repo'
+import { Repo , RefDiff } from './Repo'
 
 
-export { Logger } from './logger'
-export { Repo , RefDiff , ZeroRefs , RefCountMismatch , RefNotFound , HashMismatch } from './repo'
+export { Logger } from './Logger'
+export { Repo , RefDiff , ZeroRefs , RefCountMismatch , RefNotFound , HashMismatch } from './Repo'
 
 
 export async function refsDiffer(sourceUrl: string, targetUrl: string): Promise<RefDiff | null> {
