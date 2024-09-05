@@ -6,9 +6,10 @@
 
 import { GitRefMap } from './GitRefMap'
 
-export { GitRepoRefMap }
+export { GitRemoteRepoRefMap }
 
-interface GitRepoRefMap {
+interface GitRemoteRepoRefMap {
+  // repo - This parameter can be either a URL or the name of a remote (see the GIT URLS and REMOTES sections of git-fetch[1]).
   repo? : string
   refMap: GitRefMap
 }
