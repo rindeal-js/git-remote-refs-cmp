@@ -8,9 +8,11 @@ import { Logger } from './Logger'
 import { GitRefMap } from './GitRefMap'
 import { RefDiff , ZeroRefs , RefCountMismatch , RefNotFound , HashMismatch } from './RefDiff'
 
-export { Differ }
 
-class Differ {
+export { GitRefMapDiffer }
+
+
+class GitRefMapDiffer {
   async diff(sourceRefs: GitRefMap, targetRefs: GitRefMap): Promise<RefDiff | null> {
     Logger.trace(`Differ.diff() called`)
 
