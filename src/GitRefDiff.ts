@@ -4,11 +4,10 @@
  * SPDX-License-Identifier: GPL-3.0-only OR GPL-2.0-only
  */
 
-import { Ref } from './Ref'
 import { Repo } from './Repo'
 
 
-export class RefDiff {
+export class GitRefDiff {
   type: string = 'NO_TYPE'
   sourceRepo: Repo
   targetRepo: Repo
@@ -25,7 +24,7 @@ export class RefDiff {
   getMessage(): Promise<string> { throw new Error("Method not implemented.") }
 }
 
-export class ZeroRefs extends RefDiff {
+export class ZeroRefs extends GitRefDiff {
   type: string = 'ZERO_REFS'
 
   async getMessage(): Promise<string> {
@@ -37,7 +36,7 @@ export class ZeroRefs extends RefDiff {
   }
 }
 
-export class RefCountMismatch extends RefDiff {
+export class RefCountMismatch extends GitRefDiff {
   type: string = 'REF_COUNT_MISMATCH'
 
   async getMessage(): Promise<string> {
@@ -49,7 +48,7 @@ export class RefCountMismatch extends RefDiff {
   }
 }
 
-export class RefNotFound extends RefDiff {
+export class RefNotFound extends GitRefDiff {
   type: string = 'REF_NOT_FOUND'
 
   async getMessage(): Promise<string> {
@@ -60,7 +59,7 @@ export class RefNotFound extends RefDiff {
   }
 }
 
-export class HashMismatch extends RefDiff {
+export class HashMismatch extends GitRefDiff {
   type: string = 'HASH_MISMATCH'
 
   async getMessage(): Promise<string> {
