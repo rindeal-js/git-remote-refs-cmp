@@ -26,15 +26,15 @@ export {
 }
 
 interface GitLsRemoteRefDiff extends GitRefDiff {
-  sourceRemote: string
-  targetRemote: string
+  readonly sourceRemote: string
+  readonly targetRemote: string
 }
 
-class GitLsRemoteRefDiffBase extends GitRefDiffBase implements GitLsRemoteRefDiff {
-  public sourceRemote: string
-  public targetRemote: string
+abstract class GitLsRemoteRefDiffBase extends GitRefDiffBase implements GitLsRemoteRefDiff {
+  public readonly sourceRemote: string
+  public readonly targetRemote: string
 
-  constructor(init: {source: GitLsRemoteOutput, target: GitLsRemoteOutput, sourceRef?: GitRemoteRef, targetRef?: GitRemoteRef}) {
+  protected constructor(init: {source: GitLsRemoteOutput, target: GitLsRemoteOutput, sourceRef?: GitRemoteRef, targetRef?: GitRemoteRef}) {
     super({
       sourceRefMap: init.source.refMap,
       targetRefMap: init.target.refMap,
@@ -46,14 +46,13 @@ class GitLsRemoteRefDiffBase extends GitRefDiffBase implements GitLsRemoteRefDif
     this.message = this._getMessage()
   }
 
-  _getMessage(): string { throw new Error("Not implemented") }
+  protected abstract _getMessage(): string
 }
 
-
 class GitLsRemoteZeroRefsDiff extends GitLsRemoteRefDiffBase {
-  type: GitRefDiffType = GitRefDiffType.ZERO_REFS
+  public readonly type: GitRefDiffType = GitRefDiffType.ZERO_REFS
 
-  _getMessage(): string {
+  protected _getMessage(): string {
     const srcLen = this.sourceRefMap.length
     const dstLen = this.targetRefMap.length
     return `Zero refs: \`${this.sourceRemote}\` has \`${srcLen}\` refs, \`${this.targetRemote}\` has \`${dstLen}\` refs.`
@@ -61,9 +60,9 @@ class GitLsRemoteZeroRefsDiff extends GitLsRemoteRefDiffBase {
 }
 
 class GitLsRemoteRefCountMismatchDiff extends GitLsRemoteRefDiffBase {
-  type: GitRefDiffType = GitRefDiffType.REF_COUNT_MISMATCH
+  public readonly type: GitRefDiffType = GitRefDiffType.REF_COUNT_MISMATCH
 
-  _getMessage(): string {
+  protected _getMessage(): string {
     const srcLen = this.sourceRefMap.length
     const dstLen = this.targetRefMap.length
     return `Ref count mismatch: \`${this.sourceRemote}\` has \`${srcLen}\` refs, \`${this.targetRemote}\` has \`${dstLen}\` refs.`
@@ -71,10 +70,10 @@ class GitLsRemoteRefCountMismatchDiff extends GitLsRemoteRefDiffBase {
 }
 
 class GitLsRemoteRefNotFoundDiff extends GitLsRemoteRefDiffBase {
-  type: GitRefDiffType = GitRefDiffType.REF_NOT_FOUND
+  public readonly type: GitRefDiffType = GitRefDiffType.REF_NOT_FOUND
 
-  _getMessage(): string {
-    if ( ! this.sourceRef ) {
+  protected _getMessage(): string {
+    if (!this.sourceRef) {
       throw new Error('sourceRef is not initialized')
     }
     return `Ref not found: \`${this.sourceRef.refname}\` from \`${this.sourceRemote}\` is missing in \`${this.targetRemote}\`.`
@@ -82,12 +81,12 @@ class GitLsRemoteRefNotFoundDiff extends GitLsRemoteRefDiffBase {
 }
 
 class GitLsRemoteOidMismatchDiff extends GitLsRemoteRefDiffBase {
-  type: GitRefDiffType = GitRefDiffType.OID_MISMATCH
+  public readonly type: GitRefDiffType = GitRefDiffType.OID_MISMATCH
 
-  _getMessage(): string {
+  protected _getMessage(): string {
     const srcRef = this.sourceRef
     const dstRef = this.targetRef
-    if ( ! srcRef || ! dstRef ) {
+    if (!srcRef || !dstRef) {
       throw new Error('sourceRef or targetRef is not initialized');
     }
     return `OID mismatch for ref \`${srcRef.refname}\`: source has \`${srcRef.oid}\`, target has \`${dstRef.oid}\`.`
