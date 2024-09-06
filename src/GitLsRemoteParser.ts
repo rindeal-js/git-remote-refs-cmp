@@ -4,51 +4,65 @@
  * SPDX-License-Identifier: GPL-3.0-only OR GPL-2.0-only
  */
 
-import { Logger } from './Logger'
-import { GitRefMap } from './GitRefMap'
-import { RefDiff, ZeroRefs, RefCountMismatch, RefNotFound, HashMismatch } from './RefDiff'
+import {
+  Logger,
+} from './Logger'
+import {
+  GitRemoteRef,
+  GitRemoteRefMap,
+  GitRemoteRefBase,
+  SimpleGitRemoteRef,
+} from './GitRemoteRef'
+import {
+  RefDiff,
+  ZeroRefs,
+  RefCountMismatch,
+  RefNotFound,
+  HashMismatch,
+} from './RefDiff'
 
 
-export { GitLsRemoteParser }
-
-
-const gitOidRegExp = /^[0-9a-f]{40}$/
-const gitRefRegExp = /^(?:refs\/(?:heads|tags|remotes)\/|HEAD$)/
+export {
+  GitLsRemoteParser,
+}
 
 
 class GitLsRemoteParser {
-  public parse(rawOutput: string): GitRefMap {
-    if ( ! rawOutput ) {
-      throw new Error("TODO")
+  public parse(rawLsRemoteOutput: string, remote: string = ''): GitRemoteRefMap {
+    if ( ! rawLsRemoteOutput ) {
+      throw new Error("The `git ls-remote` output cannot be empty.")
     }
 
-    const gitRefMap = new GitRefMap()
+    const refMap = new GitRemoteRefMap()
       
-    for (const line of rawOutput.split('\n')) {
-        if ( ! line ) break
+    for (const line of rawLsRemoteOutput.split('\n')) {
+        if ( ! line ) break  // EOF
 
-        const [hash, name] = line.split('\t')
-        if ( ! hash || ! name ) {
+        const [oid, refname] = line.split('\t')
+        if ( ! oid || ! refname ) {
           const errorMsg = `Invalid \`git ls-remote\` output line: \`${line}\``
           Logger.error(errorMsg)
           throw new Error(errorMsg)
         }
-
-        if ( ! gitOidRegExp.test(hash) ) {
-          const errorMsg = `Invalid Git OID/hash: \`${hash}\``
+        if ( ! GitRemoteRefBase.validateOid(oid) ) {
+          const errorMsg = `Invalid Git OID/hash: \`${oid}\``
           Logger.error(errorMsg)
           throw new Error(errorMsg)
         }
 
-        if ( ! gitRefRegExp.test(name) ) {
-          const errorMsg = `Invalid Git ref name: \`${name}\``
+        if ( ! GitRemoteRefBase.validateRefName(refname) ) {
+          const errorMsg = `Invalid Git ref name: \`${refname}\``
           Logger.error(errorMsg)
           throw new Error(errorMsg)
         }
 
-        gitRefMap.set(name, hash)
-        Logger.silly(`Parsed ref: \`${name}\` with hash: \`${hash}\``)
+        const ref: GitRemoteRef = new SimpleGitRemoteRef({refname, oid})
+        Logger.silly(`Parsed ref: \`${ref.refname}\` with oid: \`${ref.oid}\``)
+
+        refMap.setRef(ref)
     }
+
+    return refMap
   }
 }
 
