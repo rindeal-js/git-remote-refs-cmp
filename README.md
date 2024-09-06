@@ -1,4 +1,4 @@
-# 🌟 git-remote-ref-compare 🌟
+# 🌟 git-remote-refs-cmp 🌟
 
 An efficient TypeScript micro library for comparing remote Git repositories for equality by their references.<br>
 Useful to quickly check (1-2s) if a repository mirror is up to date.
@@ -15,13 +15,13 @@ Useful to quickly check (1-2s) if a repository mirror is up to date.
 Install via npm:
 
 ```bash
-npm install https://github.com/rindeal-js/git-remote-ref-compare
+npm install https://github.com/rindeal-js/git-remote-refs-cmp
 ```
 
 ## 🛠️ Quick Start
 
 ```ts
-import { GitRepo, RefDiffTypes } from 'git-remote-ref-compare'
+import { GitRepo, RefDiffTypes } from 'git-remote-refs-cmp'
 
 const sourceRepo = new GitRepo('https://git.launchpad.net/beautifulsoup')
 const targetRepo = new GitRepo('https://github.com/facsimiles/beautifulsoup.git')
