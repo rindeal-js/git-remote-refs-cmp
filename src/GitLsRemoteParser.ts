@@ -21,6 +21,7 @@ export {
   GitLsRemoteParser,
 }
 
+
 /**
  * Class to parse the output of `git ls-remote`.
  */
