@@ -32,7 +32,7 @@ export {
  * ```
  */
 class GitRemoteRefMap extends Map<string, string> {
-  constructor(refs?: GitRemoteRef[]) {
+  public constructor(refs?: GitRemoteRef[]) {
     super(refs ? refs.map(ref => [ref.refname, ref.oid]) : [])
   }
 
