@@ -11,9 +11,9 @@ export {
 // Logger.silly(), Logger.trace(), Logger.debug(), Logger.info(), Logger.warn(), Logger.error(), Logger.fatal()
 
 class Logger {
-  static logLevel = process.env['RUNNER_DEBUG'] === '1' ? 'silly' : 'fatal'
+  public static logLevel = process.env['RUNNER_DEBUG'] === '1' ? 'silly' : 'fatal'
 
-  static log(level: string, message: unknown) {
+  public static log(level: string, message: unknown) {
     if ( ! Logger.shouldLog(level) ) return
   
     const color = Logger.getColor(level)
@@ -25,40 +25,40 @@ class Logger {
     logFunction(`${color}${emoji} ${levelStr} %s${Logger.getColor('')}`, isString ? message : '', isString ? '' : message)
   }
 
-  static silly(message: unknown) {
+  public static silly(message: unknown) {
     Logger.log('silly', message)
   }
 
-  static trace(message: unknown) {
+  public static trace(message: unknown) {
     Logger.log('trace', message)
   }
 
-  static debug(message: unknown) {
+  public static debug(message: unknown) {
     Logger.log('debug', message)
   }
 
-  static info(message: unknown) {
+  public static info(message: unknown) {
     Logger.log('info', message)
   }
 
-  static warn(message: unknown) {
+  public static warn(message: unknown) {
     Logger.log('warn', message)
   }
 
-  static error(message: unknown) {
+  public static error(message: unknown) {
     Logger.log('error', message)
   }
 
-  static fatal(message: unknown) {
+  public static fatal(message: unknown) {
     Logger.log('fatal', message)
   }
 
-  static shouldLog(level: string): boolean {
+  public static shouldLog(level: string): boolean {
     const levels = ['silly', 'trace', 'debug', 'info', 'warn', 'error', 'fatal']
     return levels.indexOf(level) >= levels.indexOf(Logger.logLevel)
   }
 
-  static getColor(level: string): string {
+  public static getColor(level: string): string {
     switch (level) {
       case 'silly': return '\x1b[35m' // Magenta
       case 'trace': return '\x1b[34m' // Blue
@@ -71,7 +71,7 @@ class Logger {
     }
   }
 
-  static getEmoji(level: string): string {
+  public static getEmoji(level: string): string {
     switch (level) {
       case 'silly': return '🤪'
       case 'trace': return '🔍'
