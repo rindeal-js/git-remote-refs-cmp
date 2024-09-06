@@ -25,5 +25,5 @@ interface GitLsRemoteOutput {
   /**
    * A map of references in the remote repository.
    */
-  refs: GitRemoteRefMap
+  refMap: GitRemoteRefMap
 }
