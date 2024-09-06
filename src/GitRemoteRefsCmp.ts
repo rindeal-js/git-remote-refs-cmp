@@ -11,12 +11,12 @@ import {
   GitLsRemoteOutput,
 } from './GitLsRemoteOutput'
 import {
-  RefDiff,
-  ZeroRefs,
-  RefCountMismatch,
-  RefNotFound,
-  OidMismatch,
-} from './RefDiff'
+  GitLsRemoteRefDiff,
+  GitLsRemoteZeroRefsDiff,
+  GitLsRemoteRefCountMismatchDiff,
+  GitLsRemoteRefNotFoundDiff,
+  GitLsRemoteOidMismatchDiff,
+} from './GitLsRemoteRefDiff'
 
 
 export {
@@ -25,17 +25,17 @@ export {
 
 
 class GitRemoteRefsCmp {
-  async lsRemoteOutputCmp(source: GitLsRemoteOutput, target: GitLsRemoteOutput): Promise<RefDiff | null> {
+  public async lsRemoteOutputCmp(source: GitLsRemoteOutput, target: GitLsRemoteOutput): Promise<GitLsRemoteRefDiff | null> {
     Logger.trace(`Differ.diff() called`)
 
     if ( source.refMap.length === 0 || target.refMap.length === 0 ) {
-      const refDiff = new ZeroRefs({ source, target })
+      const refDiff = new GitLsRemoteZeroRefsDiff({ source, target })
       Logger.error(await refDiff.getMessage())
       return refDiff
     }
 
     if ( source.refMap.length !== target.refMap.length ) {
-      const refDiff = new RefCountMismatch({ source, target })
+      const refDiff = new GitLsRemoteRefCountMismatchDiff({ source, target })
       Logger.warn(await refDiff.getMessage())
       return refDiff
     }
@@ -43,12 +43,12 @@ class GitRemoteRefsCmp {
     for (const sourceRef of source.refMap.refs()) {
       const targetRef = target.refMap.getRef(sourceRef.refname)
       if ( ! targetRef ) {
-        const refDiff = new RefNotFound({ source, target, sourceRef })
+        const refDiff = new GitLsRemoteRefNotFoundDiff({ source, target, sourceRef })
         Logger.warn(await refDiff.getMessage())
         return refDiff
       }
       if ( sourceRef.oid !== targetRef.oid ) {
-        const refDiff = new OidMismatch({ source, target, sourceRef, targetRef })
+        const refDiff = new GitLsRemoteOidMismatchDiff({ source, target, sourceRef, targetRef })
         Logger.warn(await refDiff.getMessage())
         return refDiff
       }
