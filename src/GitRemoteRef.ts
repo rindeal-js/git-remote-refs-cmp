@@ -7,7 +7,6 @@
 export {
   GitRemoteRef,
   GitRemoteRefMap,
-  GitRemoteRefMapIterator,
 }
 
 /**
@@ -35,28 +34,7 @@ export {
  * ```
  */
 interface GitRemoteRef {
-  /**
-   * The full name of the reference.
-   * 
-   * @example
-   * ```ts
-   * 'refs/heads/master'
-   * 'refs/tags/v1.0.1'
-   * 'refs/pull/1/head'
-   * ```
-   */
   refname: string
-
-  /**
-   * The object ID (OID, hash) associated with the reference.
-   * 
-   * @example
-   * ```ts
-   * 'd1e8c3f4b5a6c7d8e9f0a1b2c3d4e5f6a7b8c9d0'
-   * 'a1b2c3d4e5f6a7b8c9d0d1e8c3f4b5a6c7d8e9f0'
-   * 'f6a7b8c9d0d1e8c3f4b5a6c7d8e9f0a1b2c3d4e5'
-   * ```
-   */
   oid: string
 }
 
@@ -65,48 +43,50 @@ interface GitRemoteRef {
  * 
  * @example
  * ```ts
- * const refMap: GitRemoteRefMap = new Map([
- *   ['refs/heads/master', 'd1e8c3f4b5a6c7d8e9f0a1b2c3d4e5f6a7b8c9d0'],
- *   ['refs/tags/v1.0.1', 'a1b2c3d4e5f6a7b8c9d0d1e8c3f4b5a6c7d8e9f0']
+ * const refMap: GitRemoteRefMap = new GitRemoteRefMap([
+ *   {refname: 'refs/heads/master', oid: 'd1e8c3f4b5a6c7d8e9f0a1b2c3d4e5f6a7b8c9d0'},
+ *   {refname: 'refs/tags/v1.0.1', oid: 'a1b2c3d4e5f6a7b8c9d0d1e8c3f4b5a6c7d8e9f0'},
  * ])
- * ```
- */
-type GitRemoteRefMap = Map<string, string>
-
-/**
- * An iterator for GitRemoteRefMap.
- * 
- * @example
- * ```ts
- * const refMap: GitRemoteRefMap = new Map([
- *   ['refs/heads/master', 'd1e8c3f4b5a6c7d8e9f0a1b2c3d4e5f6a7b8c9d0'],
- *   ['refs/tags/v1.0.1', 'a1b2c3d4e5f6a7b8c9d0d1e8c3f4b5a6c7d8e9f0']
- * ])
- * const iterator = new GitRemoteRefMapIterator(refMap)
- * for (const ref of iterator) {
+ * refMap.setRef({refname: 'refs/pull/1/head', oid: 'f6a7b8c9d0d1e8c3f4b5a6c7d8e9f0a1b2c3d4e5'})
+ *
+ * for (const ref of refMap.refs()) {
  *   console.log(ref.refname)
  *   console.log(ref.oid)
  * }
  * ```
  */
-class GitRemoteRefMapIterator implements IterableIterator<GitRemoteRef> {
-  private entriesIterator: IterableIterator<[string, string]>
-
-  constructor(map: GitRemoteRefMap) {
-    this.entriesIterator = map.entries()
+class GitRemoteRefMap extends Map<string, string> {
+  constructor(refs?: GitRemoteRef[]) {
+    super(refs ? refs.map(ref => [ref.refname, ref.oid]) : [])
   }
 
-  public next(): IteratorResult<GitRemoteRef> {
-    const result = this.entriesIterator.next()
-    if (result.done) {
-      return { done: true, value: undefined }
+  public *refs(): IterableIterator<GitRemoteRef> {
+    for (const [refname, oid] of this.entries()) {
+      yield { refname, oid }
     }
-    const [refname, oid] = result.value
-    const ref: GitRemoteRef = { refname, oid }
-    return { done: false, value: ref }
   }
 
-  *Symbol.iterator: IterableIterator<GitRemoteRef> {
+  public *refnames(): IterableIterator<string> {
+    return this.keys()
+  }
+
+  public *oids(): IterableIterator<string> {
+    return this.values()
+  }
+
+  public setRef(ref: GitRemoteRef): this {
+    this.set(ref.refname, ref.oid)
     return this
+  }
+
+  public getRef(refname: string): GitRemoteRef | undefined {
+    const oid = this.get(refname)
+    return oid ? { refname, oid } : undefined
+  }
+
+  public forEachRef(callback: (ref: GitRemoteRef) => void): void {
+    for (const ref of this.refs()) {
+      callback(ref)
+    }
   }
 }
