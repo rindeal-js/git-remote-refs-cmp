@@ -7,6 +7,7 @@
 export {
   GitRemoteRef,
   GitRemoteRefMap,
+  GitRemoteRefBase,
   SimpleGitRemoteRef,
 }
 
