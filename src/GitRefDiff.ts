@@ -27,24 +27,24 @@ enum GitRefDiffType {
 
 
 interface GitRefDiff {
-  type: GitRefDiffType
-  message: string
-  sourceRefMap: GitRemoteRefMap
-  targetRefMap: GitRemoteRefMap
-  sourceRef?: GitRemoteRef
-  targetRef?: GitRemoteRef
+  readonly type: GitRefDiffType
+  readonly message: string
+  readonly sourceRefMap: GitRemoteRefMap
+  readonly targetRefMap: GitRemoteRefMap
+  readonly sourceRef?: GitRemoteRef
+  readonly targetRef?: GitRemoteRef
 }
 
 
-class GitRefDiffBase implements GitRefDiff {
-  public type: GitRefDiffType = GitRefDiffType.UNKNOWN
-  public message: string = ''
-  public sourceRefMap: GitRemoteRefMap
-  public targetRefMap: GitRemoteRefMap
-  public sourceRef?: GitRemoteRef
-  public targetRef?: GitRemoteRef
+abstract class GitRefDiffBase implements GitRefDiff {
+  public readonly type: GitRefDiffType = GitRefDiffType.UNKNOWN
+  public readonly message: string = ''
+  public readonly sourceRefMap: GitRemoteRefMap
+  public readonly targetRefMap: GitRemoteRefMap
+  public readonly sourceRef?: GitRemoteRef
+  public readonly targetRef?: GitRemoteRef
 
-  constructor(init: {sourceRefMap: GitRemoteRefMap, targetRefMap: GitRemoteRefMap, sourceRef?: GitRemoteRef, targetRef?: GitRemoteRef}) {
+  protected constructor(init: {sourceRefMap: GitRemoteRefMap, targetRefMap: GitRemoteRefMap, sourceRef?: GitRemoteRef, targetRef?: GitRemoteRef}) {
     this.sourceRefMap = init.sourceRefMap
     this.targetRefMap = init.targetRefMap
     this.sourceRef = init.sourceRef
