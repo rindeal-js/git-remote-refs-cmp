@@ -7,8 +7,6 @@
 import {
   which,
 } from 'Utils'
-
-
 import {
   GitVersionCommand,
 } from './GitCommands/Version'
@@ -16,8 +14,11 @@ import {
   GitLsRemoteCommand,
 } from './GitCommands/LsRemote'
 
+export {
+  GitCommandManager,
+}
 
-export class GitCommandManager {
+class GitCommandManager {
   protected gitVersion: string = ''
   protected gitPath: string = ''
 
