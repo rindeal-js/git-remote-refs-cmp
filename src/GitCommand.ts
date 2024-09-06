@@ -15,7 +15,7 @@ export {
 
 
 abstract class GitCommand {
-  constructor(protected gitPath: string) {}
+  abstract constructor(protected gitPath: string) {}
 
   abstract execute(): Promise<string>
 
