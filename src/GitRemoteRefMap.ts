@@ -9,6 +9,11 @@ import {
 } from './GitRemoteRef'
 
 
+export {
+  GitRemoteRefMap,
+}
+
+  
 /**
  * A map of reference names to their corresponding object IDs.
  * 
