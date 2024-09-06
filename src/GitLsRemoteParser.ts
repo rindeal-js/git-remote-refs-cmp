@@ -10,60 +10,63 @@ import {
 import {
   GitRemoteRef,
   GitRemoteRefMap,
-  GitRemoteRefBase,
   SimpleGitRemoteRef,
 } from './GitRemoteRef'
 import {
-  RefDiff,
-  ZeroRefs,
-  RefCountMismatch,
-  RefNotFound,
-  HashMismatch,
-} from './RefDiff'
+  GitLsRemoteOutput,
+} from './GitLsRemoteOutput'
 
 
 export {
   GitLsRemoteParser,
 }
 
-
+/**
+ * Class to parse the output of `git ls-remote`.
+ */
 class GitLsRemoteParser {
-  public parse(rawLsRemoteOutput: string, remote: string = ''): GitRemoteRefMap {
+  /**
+   * Parses the raw output from `git ls-remote` command.
+   * 
+   * @param rawLsRemoteOutput - The raw output string from `git ls-remote`.
+   * @param remote - The remote repository. This parameter can be either a URL or the name of a remote.
+   * @returns An object containing the remote and its refs.
+   * @throws Will throw an error if the `git ls-remote` output is empty or invalid.
+   */
+  public parse(rawLsRemoteOutput: string, remote: string = ''): GitLsRemoteOutput {
     if ( ! rawLsRemoteOutput ) {
-      throw new Error("The `git ls-remote` output cannot be empty.")
+      const errorMsg = "The `git ls-remote` output cannot be empty."
+      Logger.error(remote ? `${errorMsg} Remote: \`${remote}\`` : errorMsg)
+      throw new Error(errorMsg)
     }
 
-    const refMap = new GitRemoteRefMap()
-      
-    for (const line of rawLsRemoteOutput.split('\n')) {
-        if ( ! line ) break  // EOF
+    const refs = new GitRemoteRefMap()
+    Logger.info(remote ? `Parsing refs for remote: \`${remote}\`` : 'Parsing refs')
 
-        const [oid, refname] = line.split('\t')
-        if ( ! oid || ! refname ) {
-          const errorMsg = `Invalid \`git ls-remote\` output line: \`${line}\``
-          Logger.error(errorMsg)
-          throw new Error(errorMsg)
-        }
-        if ( ! GitRemoteRefBase.validateOid(oid) ) {
-          const errorMsg = `Invalid Git OID/hash: \`${oid}\``
-          Logger.error(errorMsg)
-          throw new Error(errorMsg)
-        }
+    for ( const line of rawLsRemoteOutput.split('\n') ) {
+      if ( ! line ) break  // EOF
 
-        if ( ! GitRemoteRefBase.validateRefName(refname) ) {
-          const errorMsg = `Invalid Git ref name: \`${refname}\``
-          Logger.error(errorMsg)
-          throw new Error(errorMsg)
-        }
+      const [oid, refname, extraFieldCanary] = line.split('\t')
+      if ( extraFieldCanary || ! oid || ! refname ) {
+        const errorMsg = `Invalid \`git ls-remote\` output line: \`${line}\``
+        Logger.error(remote ? `${errorMsg} Remote: \`${remote}\`` : errorMsg)
+        throw new Error(errorMsg)
+      }
 
+      try {
         const ref: GitRemoteRef = new SimpleGitRemoteRef({refname, oid})
-        Logger.silly(`Parsed ref: \`${ref.refname}\` with oid: \`${ref.oid}\``)
+      } catch (err) {
+        Logger.error(remote ? `${err.message} Remote: \`${remote}\`` : err.message)
+        throw err
+      }
+      Logger.silly(`Parsed ref: \`${ref.refname}\` with oid: \`${ref.oid}\``)
 
-        refMap.setRef(ref)
+      refs.setRef(ref)
     }
 
-    return refMap
+    const parsedOutput: GitLsRemoteOutput = {remote, refs}
+    Logger.debug(remote ? `Parsed output for remote: \`${remote}\`` : 'Parsed output')
+
+    return parsedOutput
   }
 }
-
-
