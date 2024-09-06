@@ -17,17 +17,17 @@ import {
 } from './GitCommands/LsRemote'
 
 
-class GitCommandManager {
+export class GitCommandManager {
   protected gitVersion: string = ''
   protected gitPath: string = ''
 
-  async initialize() {
+  public async initialize(): Promise<void> {
     this.gitPath = await which('git')
     const versionCmd = new GitVersionCommand(this.gitPath)
     this.gitVersion = await versionCmd.execute()
   }
 
-  async lsRemote(options: {
+  public async lsRemote(options: {
     remote?: string,
     branches?: boolean,
     tags?: boolean,
