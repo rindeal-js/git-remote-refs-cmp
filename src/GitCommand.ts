@@ -4,9 +4,15 @@
  * SPDX-License-Identifier: GPL-3.0-only OR GPL-2.0-only
  */
 
+import {
+  execFile,
+} from 'child_process'
+
+
 export {
   GitCommand,
 }
+
 
 abstract class GitCommand {
   constructor(protected gitPath: string) {}
