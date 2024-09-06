@@ -1,79 +1,53 @@
 /**
  * SPDX-FileCopyrightText: 2024 Jan Chren ~rindeal
  *
- * SPDX-License-Identifier: GPL-3.0-only OR GPL-2.0-only
+ * SPDX-License: GPL-3.0-only OR GPL-2.0-only
  */
 
+import {
+  GitRemoteRef,
+  GitRemoteRefMap,
+} from './GitRemoteRef'
+
+
 export {
+  GitRefDiffType,
   GitRefDiff,
-  ZeroRefs,
-  RefCountMismatch,
-  RefNotFound,
-  OidMismatch,
+  GitRefDiffBase,
 }
 
 
-class GitRefDiff {
-  type: string = 'NO_TYPE'
-  sourceRepo: Repo
-  targetRepo: Repo
-  sourceRef?: Ref
-  targetRef?: Ref
+enum GitRefDiffType {
+  UNKNOWN = 'UNKNOWN',
+  ZERO_REFS = 'ZERO_REFS',
+  REF_COUNT_MISMATCH = 'REF_COUNT_MISMATCH',
+  REF_NOT_FOUND = 'REF_NOT_FOUND',
+  OID_MISMATCH = 'OID_MISMATCH',
+}
 
-  constructor(init: {sourceRepo: Repo, targetRepo: Repo, sourceRef?: Ref, targetRef?: Ref}) {
-    this.sourceRepo = init.sourceRepo
-    this.targetRepo = init.targetRepo
+
+interface GitRefDiff {
+  type: GitRefDiffType
+  message: string
+  sourceRefMap: GitRemoteRefMap
+  targetRefMap: GitRemoteRefMap
+  sourceRef?: GitRemoteRef
+  targetRef?: GitRemoteRef
+}
+
+
+class GitRefDiffBase implements GitRefDiff {
+  public type: GitRefDiffType = GitRefDiffType.UNKNOWN
+  public message: string = ''
+  public sourceRefMap: GitRemoteRefMap
+  public targetRefMap: GitRemoteRefMap
+  public sourceRef?: GitRemoteRef
+  public targetRef?: GitRemoteRef
+
+  constructor(init: {sourceRefMap: GitRemoteRefMap, targetRefMap: GitRemoteRefMap, sourceRef?: GitRemoteRef, targetRef?: GitRemoteRef}) {
+    this.sourceRefMap = init.sourceRefMap
+    this.targetRefMap = init.targetRefMap
     this.sourceRef = init.sourceRef
     this.targetRef = init.targetRef
-  }
-
-  getMessage(): Promise<string> { throw new Error("Method not implemented.") }
-}
-
-class ZeroRefs extends GitRefDiff {
-  type: string = 'ZERO_REFS'
-
-  async getMessage(): Promise<string> {
-    const srcUrl = this.sourceRepo.url
-    const dstUrl = this.targetRepo.url
-    const srcRefsLen = (await this.sourceRepo.getRefs()).length
-    const dstRefsLen = (await this.targetRepo.getRefs()).length
-    return `Zero refs: \`${srcUrl}\` has \`${srcRefsLen}\` refs, \`${dstUrl}\` has \`${dstRefsLen}\` refs.`
-  }
-}
-
-class RefCountMismatch extends GitRefDiff {
-  type: string = 'REF_COUNT_MISMATCH'
-
-  async getMessage(): Promise<string> {
-    const srcUrl = this.sourceRepo.url
-    const dstUrl = this.targetRepo.url
-    const srcRefsLen = (await this.sourceRepo.getRefs()).length
-    const dstRefsLen = (await this.targetRepo.getRefs()).length
-    return `Ref count mismatch: \`${srcUrl}\` has \`${srcRefsLen}\` refs, \`${dstUrl}\` has \`${dstRefsLen}\` refs.`
-  }
-}
-
-class RefNotFound extends GitRefDiff {
-  type: string = 'REF_NOT_FOUND'
-
-  async getMessage(): Promise<string> {
-    if ( ! this.sourceRef ) {
-      throw new Error('sourceRef is not initialized');
-    }
-    return `Ref not found: \`${this.sourceRef.name}\` is missing in \`${this.targetRepo.url}\`.`
-  }
-}
-
-class OidMismatch extends GitRefDiff {
-  type: string = 'HASH_MISMATCH'
-
-  async getMessage(): Promise<string> {
-    const srcRef = this.sourceRef
-    const dstRef = this.targetRef
-    if ( ! srcRef || ! dstRef ) {
-      throw new Error('sourceRef or targetRef is not initialized');
-    }
-    return `Hash mismatch for ref \`${srcRef.name}\`: source repo has \`${srcRef.hash}\`, target repo has \`${dstRef.hash}\`.`
   }
 }
