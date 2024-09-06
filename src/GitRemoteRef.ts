@@ -7,6 +7,7 @@
 export {
   GitRemoteRef,
   GitRemoteRefMap,
+  SimpleGitRemoteRef,
 }
 
 /**
@@ -60,33 +61,101 @@ class GitRemoteRefMap extends Map<string, string> {
     super(refs ? refs.map(ref => [ref.refname, ref.oid]) : [])
   }
 
+  /**
+   * Returns an iterator of GitRemoteRef objects.
+   */
   public *refs(): IterableIterator<GitRemoteRef> {
     for (const [refname, oid] of this.entries()) {
       yield { refname, oid }
     }
   }
 
+  /**
+   * Returns an iterator of reference names.
+   */
   public *refnames(): IterableIterator<string> {
     return this.keys()
   }
 
+  /**
+   * Returns an iterator of object IDs.
+   */
   public *oids(): IterableIterator<string> {
     return this.values()
   }
 
+  /**
+   * Sets a reference in the map.
+   * 
+   * @param ref - The GitRemoteRef to set.
+   * @returns The updated GitRemoteRefMap.
+   */
   public setRef(ref: GitRemoteRef): this {
     this.set(ref.refname, ref.oid)
     return this
   }
 
+  /**
+   * Gets a reference by its name.
+   * 
+   * @param refname - The name of the reference.
+   * @returns The GitRemoteRef or undefined if not found.
+   */
   public getRef(refname: string): GitRemoteRef | undefined {
     const oid = this.get(refname)
     return oid ? { refname, oid } : undefined
   }
 
+  /**
+   * Executes a callback for each reference in the map.
+   * 
+   * @param callback - The callback to execute.
+   */
   public forEachRef(callback: (ref: GitRemoteRef) => void): void {
     for (const ref of this.refs()) {
       callback(ref)
     }
+  }
+}
+
+class GitRemoteRefBase implements GitRemoteRef {
+  static _gitOidRegExp = /^[0-9a-f]{40}$/
+  static _gitRefNameRegExp = /^(?:refs\/(?:heads|tags|remotes)\/|HEAD$)/
+
+  public static validateOid(oid: string): boolean {
+    return GitRemoteRefBase._gitOidRegExp.test(oid)
+  }
+
+  public static validateRefName(refname: string): boolean {
+    return GitRemoteRefBase._gitRefNameRegExp.test(refname)
+  }
+}
+
+/**
+ * A simple implementation of the GitRemoteRef interface.
+ * 
+ * @example
+ * ```ts
+ * const simpleRef = new SimpleGitRemoteRef({
+ *   refname: 'refs/heads/develop',
+ *   oid: 'b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0'
+ * });
+ * console.log(simpleRef.refname); // 'refs/heads/develop'
+ * console.log(simpleRef.oid); // 'b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0'
+ * ```
+ */
+class SimpleGitRemoteRef extends GitRemoteRefBase {
+  refname: string;
+  oid: string;
+
+  constructor({ refname, oid }: GitRemoteRef) {
+    if ( ! ( oid && GitRemoteRefBase.validateOid(oid) ) ) {
+      throw new Error(`Invalid OID: \`${oid}\``)
+    }
+    if ( ! ( oid && GitRemoteRefBase.validateRefName(refname) ) ) {
+      throw new Error(`Invalid refname: \`${refname}\``)
+    }
+    this.refname = refname
+    this.oid = oid
   }
 }
