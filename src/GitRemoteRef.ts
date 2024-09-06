@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-only OR GPL-2.0-only
  */
 
-export { GitRemoteRef }
-
+export { GitRemoteRef, GitRemoteRefMap, GitRemoteRefMapIterator }
 
 /**
  * Represents a reference in a remote Git repository.
@@ -36,9 +35,11 @@ interface GitRemoteRef {
    * The full name of the reference.
    * 
    * @example
+   * ```ts
    * 'refs/heads/master'
    * 'refs/tags/v1.0.1'
    * 'refs/pull/1/head'
+   * ```
    */
   refname: string
 
@@ -46,9 +47,61 @@ interface GitRemoteRef {
    * The object ID (OID, hash) associated with the reference.
    * 
    * @example
+   * ```ts
    * 'd1e8c3f4b5a6c7d8e9f0a1b2c3d4e5f6a7b8c9d0'
    * 'a1b2c3d4e5f6a7b8c9d0d1e8c3f4b5a6c7d8e9f0'
    * 'f6a7b8c9d0d1e8c3f4b5a6c7d8e9f0a1b2c3d4e5'
+   * ```
    */
   oid: string
+}
+
+/**
+ * A map of reference names to their corresponding object IDs.
+ * 
+ * @example
+ * ```ts
+ * const refMap: GitRemoteRefMap = new Map([
+ *   ['refs/heads/master', 'd1e8c3f4b5a6c7d8e9f0a1b2c3d4e5f6a7b8c9d0'],
+ *   ['refs/tags/v1.0.1', 'a1b2c3d4e5f6a7b8c9d0d1e8c3f4b5a6c7d8e9f0']
+ * ])
+ * ```
+ */
+type GitRemoteRefMap = Map<string, string>
+
+/**
+ * An iterator for GitRemoteRefMap.
+ * 
+ * @example
+ * ```ts
+ * const refMap: GitRemoteRefMap = new Map([
+ *   ['refs/heads/master', 'd1e8c3f4b5a6c7d8e9f0a1b2c3d4e5f6a7b8c9d0'],
+ *   ['refs/tags/v1.0.1', 'a1b2c3d4e5f6a7b8c9d0d1e8c3f4b5a6c7d8e9f0']
+ * ])
+ * const iterator = new GitRemoteRefMapIterator(refMap)
+ * for (const ref of iterator) {
+ *   console.log(ref)
+ * }
+ * ```
+ */
+class GitRemoteRefMapIterator implements IterableIterator<GitRemoteRef> {
+  private entriesIterator: IterableIterator<[string, string]>
+
+  constructor(map: GitRemoteRefMap) {
+    this.entriesIterator = map.entries()
+  }
+
+  public next(): IteratorResult<GitRemoteRef> {
+    const result = this.entriesIterator.next()
+    if (result.done) {
+      return { done: true, value: undefined }
+    }
+    const [refname, oid] = result.value
+    const ref: GitRemoteRef = { refname, oid }
+    return { done: false, value: ref }
+  }
+
+  *Symbol.iterator: IterableIterator<GitRemoteRef> {
+    return this
+  }
 }
