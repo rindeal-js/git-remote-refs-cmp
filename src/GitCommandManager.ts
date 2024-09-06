@@ -14,9 +14,11 @@ import {
   GitLsRemoteCommand,
 } from './GitCommands/LsRemote'
 
+
 export {
   GitCommandManager,
 }
+
 
 class GitCommandManager {
   protected gitVersion: string = ''
