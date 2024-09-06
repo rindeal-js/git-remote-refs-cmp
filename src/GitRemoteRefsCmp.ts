@@ -28,20 +28,20 @@ class GitRemoteRefsCmp {
   async lsRemoteOutputCmp(source: GitLsRemoteOutput, target: GitLsRemoteOutput): Promise<RefDiff | null> {
     Logger.trace(`Differ.diff() called`)
 
-    if ( source.refs.length === 0 || target.refs.length === 0 ) {
+    if ( source.refMap.length === 0 || target.refMap.length === 0 ) {
       const refDiff = new ZeroRefs({ source, target })
       Logger.error(await refDiff.getMessage())
       return refDiff
     }
 
-    if ( source.refs.length !== target.refs.length ) {
+    if ( source.refMap.length !== target.refMap.length ) {
       const refDiff = new RefCountMismatch({ source, target })
       Logger.warn(await refDiff.getMessage())
       return refDiff
     }
 
-    for (const sourceRef of source.refs.refs()) {
-      const targetRef = target.refs.getRef(sourceRef.refname)
+    for (const sourceRef of source.refMap.refs()) {
+      const targetRef = target.refMap.getRef(sourceRef.refname)
       if ( ! targetRef ) {
         const refDiff = new RefNotFound({ source, target, sourceRef })
         Logger.warn(await refDiff.getMessage())
