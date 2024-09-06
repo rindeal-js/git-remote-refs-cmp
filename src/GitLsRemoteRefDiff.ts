@@ -16,6 +16,7 @@ import {
   GitLsRemoteOutput,
 } from './GitLsRemoteOutput'
 
+
 export {
   GitLsRemoteRefDiff,
   GitLsRemoteRefDiffBase,
@@ -24,6 +25,7 @@ export {
   GitLsRemoteRefNotFoundDiff,
   GitLsRemoteOidMismatchDiff,
 }
+
 
 interface GitLsRemoteRefDiff extends GitRefDiff {
   readonly sourceRemote: string
