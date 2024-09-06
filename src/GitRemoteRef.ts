@@ -84,7 +84,8 @@ type GitRemoteRefMap = Map<string, string>
  * ])
  * const iterator = new GitRemoteRefMapIterator(refMap)
  * for (const ref of iterator) {
- *   console.log(ref)
+ *   console.log(ref.refname)
+ *   console.log(ref.oid)
  * }
  * ```
  */
