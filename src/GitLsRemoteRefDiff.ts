@@ -5,16 +5,18 @@
  */
 
 import {
-  GitRefDiffType,
+  GitLsRemoteOutput,
+} from './GitLsRemoteOutput'
+import {
   GitRefDiff,
   GitRefDiffBase,
 } from './GitRefDiff'
 import {
+  GitRefDiffType,
+} from './GitRefDiffType'
+import {
   GitRemoteRef,
 } from './GitRemoteRef'
-import {
-  GitLsRemoteOutput,
-} from './GitLsRemoteOutput'
 
 
 export {
