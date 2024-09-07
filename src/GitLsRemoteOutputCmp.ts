@@ -20,12 +20,12 @@ import {
 
 
 export {
-  GitRemoteRefsCmp,
+  GitLsRemoteOutputCmp,
 }
 
 
-class GitRemoteRefsCmp {
-  public async lsRemoteOutputCmp(source: GitLsRemoteOutput, target: GitLsRemoteOutput): Promise<GitLsRemoteRefDiff | null> {
+class GitLsRemoteOutputCmp {
+  public async compare(source: GitLsRemoteOutput, target: GitLsRemoteOutput): Promise<GitLsRemoteRefDiff | null> {
     Logger.trace(`Differ.diff() called`)
 
     if ( source.refMap.length === 0 || target.refMap.length === 0 ) {
