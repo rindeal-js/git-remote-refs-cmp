@@ -38,11 +38,12 @@ class GitRemoteRefsCmp {
   }
 
   private async processRemote(remote: string): Promise<GitLsRemoteOutput> {
-    const rawOutput = await this.git.lsRemote({remote: sourceRemote})
+    const rawOutput = await this.git.lsRemote({ remote })
     return this.parser.parse(rawOutput, remote)
   }
-  
+
   public async compare(sourceRemote: string, targetRemote: string): Promise<GitLsRemoteRefDiff | null> {
+    console.assert(this.git.isInitialized())
     const promises = [sourceRemote, targetRemote].map(this.processRemote)
     [source, target] = await Promise.all(promises)
     return this.lsRemoteCmp.compare(source, target)
