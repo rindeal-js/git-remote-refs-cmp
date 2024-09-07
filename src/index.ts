@@ -12,9 +12,25 @@ import {
 } from './GitRemoteRefsCmp'
 
 
-export type { GitLsRemoteRefDiff } from './GitLsRemoteRefDiff'
-export type { GitRemoteRefsCmp } from './GitRemoteRefsCmp'
-export type { Logger } from './Logger'
+export type {
+  GitLsRemoteRefDiff,
+  GitLsRemoteZeroRefsDiff,
+  GitLsRemoteRefCountMismatchDiff,
+  GitLsRemoteRefNotFoundDiff,
+  GitLsRemoteOidMismatchDiff,
+} from './GitLsRemoteRefDiff'
+export type {
+  GitRefDiff,
+} from './GitRefDiff'
+export type {
+  GitRefDiffType,
+} from './GitRefDiffType'
+export type {
+  GitRemoteRefsCmp,
+} from './GitRemoteRefsCmp'
+export type {
+  Logger,
+} from './Logger'
 
 
 export {
