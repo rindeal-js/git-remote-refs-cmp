@@ -37,6 +37,7 @@ class GitCommandManager {
     exitCode?: boolean,
     patterns?: string[]
   }): Promise<string> {
+    console.assert(this.gitPath)
     const lsRemoteCommand = new GitLsRemoteCommand(this.gitPath, options)
     return lsRemoteCommand.execute()
   }
