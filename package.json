@@ -1,21 +1,21 @@
 {
-  "name": "@rindeal/git-remote-ref-compare",
-  "version": "0.2.0",
+  "name": "@rindeal/git-remote-refs-cmp",
+  "version": "0.3.0",
   "license": "GPL-3.0-only OR GPL-2.0-only",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc --strict --pretty",
-    "test": "jest --color",
-    "lint": "npm run -- lint:eslint",
-    "lint:eslint": "eslint --color -- src/",
+    "build": "npx -- tsc --pretty",
+    "test": "npx -- jest --color",
+    "lint": "npm run lint:eslint --",
+    "lint:eslint": "npx eslint --color -- src/",
     "lint:reuse": "pipx run --quiet -- reuse lint"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
     "@tsconfig/node20": "^20.1.4",
     "@types/jest": "^29.5.12",
-    "@types/node": "^22.5.2",
+    "@types/node": "^22.5.4",
     "eslint": "^9.9.1",
     "ts-jest": "^29.2.5",
     "typescript": "^5.0.0",

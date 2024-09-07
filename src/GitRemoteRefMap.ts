@@ -49,14 +49,18 @@ class GitRemoteRefMap extends Map<string, string> {
    * Returns an iterator of reference names.
    */
   public *refnames(): IterableIterator<string> {
-    return this.keys()
+    for (const refname of this.keys()) {
+      yield refname
+    }
   }
 
   /**
    * Returns an iterator of object IDs.
    */
   public *oids(): IterableIterator<string> {
-    return this.values()
+    for (const oid of this.values()) {
+      yield oid
+    }
   }
 
   /**

@@ -6,7 +6,7 @@
 
 import {
   GitRemoteRefMap,
-} from './GitRemoteRef'
+} from './GitRemoteRefMap'
 
 
 export {

@@ -27,7 +27,11 @@ export {
 
 
 class GitRemoteRefsCmp {
-  public construct() {
+  git: GitCommandManager
+  parser: GitLsRemoteParser
+  lsRemoteCmp: GitLsRemoteOutputCmp
+
+  public constructor() {
     this.git = new GitCommandManager()
     this.parser = new GitLsRemoteParser()
     this.lsRemoteCmp = new GitLsRemoteOutputCmp()
@@ -45,7 +49,7 @@ class GitRemoteRefsCmp {
   public async compare(sourceRemote: string, targetRemote: string): Promise<GitLsRemoteRefDiff | null> {
     console.assert(this.git.isInitialized())
     const promises = [sourceRemote, targetRemote].map(this.processRemote)
-    [source, target] = await Promise.all(promises)
+    const [source, target] = await Promise.all(promises)
     return this.lsRemoteCmp.compare(source, target)
   }
 }

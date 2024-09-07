@@ -46,6 +46,17 @@ abstract class GitRemoteRefBase implements GitRemoteRef {
   protected static readonly _gitOidRegExp = /^[0-9a-f]{40}$/
   protected static readonly _gitRefNameRegExp = /^(?:refs\/(?:heads|tags|remotes)\/|HEAD$)/
 
+  public constructor({ refname, oid }: GitRemoteRef) {
+    if ( ! GitRemoteRefBase._gitOidRegExp.test(oid) ) {
+      throw new Error(`Invalid OID: \`${oid}\``)
+    }
+    if ( ! GitRemoteRefBase._gitRefNameRegExp.test(refname) ) {
+      throw new Error(`Invalid refname: \`${refname}\``)
+    }
+    this.refname = refname
+    this.oid = oid
+  }
+
   public static validateOid(oid: string): boolean {
     return GitRemoteRefBase._gitOidRegExp.test(oid)
   }
@@ -68,16 +79,4 @@ abstract class GitRemoteRefBase implements GitRemoteRef {
  * console.log(simpleRef.oid); // 'b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0'
  * ```
  */
-class SimpleGitRemoteRef extends GitRemoteRefBase {
-  public constructor({ refname, oid }: GitRemoteRef) {
-    super()
-    if ( ! GitRemoteRefBase._gitOidRegExp.test(oid) ) {
-      throw new Error(`Invalid OID: \`${oid}\``)
-    }
-    if ( ! GitRemoteRefBase._gitRefNameRegExp.test(refname) ) {
-      throw new Error(`Invalid refname: \`${refname}\``)
-    }
-    this.refname = refname
-    this.oid = oid
-  }
-}
+class SimpleGitRemoteRef extends GitRemoteRefBase { }

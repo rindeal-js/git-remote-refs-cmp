@@ -21,7 +21,7 @@ class Logger {
     const levelStr = `[${level.toUpperCase()}]`
     const isString = typeof message === 'string'
   
-    const logFunction = ['error', 'fatal'].contains(level) ? console.error : console.log
+    const logFunction = ['error', 'fatal'].includes(level) ? console.error : console.log
     logFunction(`${color}${emoji} ${levelStr} %s${Logger.getColor('')}`, isString ? message : '', isString ? '' : message)
   }
 

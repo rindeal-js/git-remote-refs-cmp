@@ -6,7 +6,7 @@
 
 import {
   which,
-} from 'Utils'
+} from './Utils'
 import {
   GitVersionCommand,
 } from './GitCommands/Version'

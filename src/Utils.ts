@@ -13,7 +13,7 @@ export {
 }
 
 
-async function which(executable: string): Promise<string | null> {
+async function which(executable: string): Promise<string> {
   const dirs = process.env.PATH?.split(path.delimiter) || []
   const checks = dirs.map(async (dir) => {
     const fullPath = path.join(dir, executable)
@@ -21,10 +21,10 @@ async function which(executable: string): Promise<string | null> {
       await fs.access(fullPath, fs.constants.X_OK)
       return fullPath
     } catch {
-      return null
+      return ''
     }
   })
 
   const results = await Promise.all(checks)
-  return results.find(result => result) || null
+  return results.find(result => result) ?? ''
 }

@@ -28,15 +28,15 @@ class GitLsRemoteOutputCmp {
   public async compare(source: GitLsRemoteOutput, target: GitLsRemoteOutput): Promise<GitLsRemoteRefDiff | null> {
     Logger.trace(`Differ.diff() called`)
 
-    if ( source.refMap.length === 0 || target.refMap.length === 0 ) {
+    if ( source.refMap.size === 0 || target.refMap.size === 0 ) {
       const refDiff = new GitLsRemoteZeroRefsDiff({ source, target })
-      Logger.error(await refDiff.getMessage())
+      Logger.error(await refDiff.message)
       return refDiff
     }
 
-    if ( source.refMap.length !== target.refMap.length ) {
+    if ( source.refMap.size !== target.refMap.size ) {
       const refDiff = new GitLsRemoteRefCountMismatchDiff({ source, target })
-      Logger.warn(await refDiff.getMessage())
+      Logger.warn(await refDiff.message)
       return refDiff
     }
 
@@ -44,12 +44,12 @@ class GitLsRemoteOutputCmp {
       const targetRef = target.refMap.getRef(sourceRef.refname)
       if ( ! targetRef ) {
         const refDiff = new GitLsRemoteRefNotFoundDiff({ source, target, sourceRef })
-        Logger.warn(await refDiff.getMessage())
+        Logger.warn(await refDiff.message)
         return refDiff
       }
       if ( sourceRef.oid !== targetRef.oid ) {
         const refDiff = new GitLsRemoteOidMismatchDiff({ source, target, sourceRef, targetRef })
-        Logger.warn(await refDiff.getMessage())
+        Logger.warn(await refDiff.message)
         return refDiff
       }
     }

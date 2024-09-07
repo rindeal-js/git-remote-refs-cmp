@@ -9,6 +9,11 @@ import {
 } from '../GitCommand'
 
 
+export {
+  GitLsRemoteCommand,
+}
+
+
 class GitLsRemoteCommand extends GitCommand {
   constructor(gitPath: string, private options: {
     remote?: string,
@@ -42,7 +47,7 @@ class GitLsRemoteCommand extends GitCommand {
       args.push(this.options.remote)
     }
     if (this.options.patterns) {
-      if (!this.options.remote) {
+      if ( ! this.options.remote ) {
         throw new Error('Option `remote` is needed for option `patterns`')
       }
       for (const pattern of this.options.patterns) {

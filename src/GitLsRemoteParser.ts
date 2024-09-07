@@ -9,9 +9,11 @@ import {
 } from './Logger'
 import {
   GitRemoteRef,
-  GitRemoteRefMap,
   SimpleGitRemoteRef,
 } from './GitRemoteRef'
+import {
+  GitRemoteRefMap
+} from './GitRemoteRefMap'
 import {
   GitLsRemoteOutput,
 } from './GitLsRemoteOutput'
@@ -41,7 +43,7 @@ class GitLsRemoteParser {
       throw new Error(errorMsg)
     }
 
-    const refs = new GitRemoteRefMap()
+    const refMap = new GitRemoteRefMap()
     Logger.info(remote ? `Parsing refs for remote: \`${remote}\`` : 'Parsing refs')
 
     for ( const line of rawLsRemoteOutput.split('\n') ) {
@@ -54,18 +56,19 @@ class GitLsRemoteParser {
         throw new Error(errorMsg)
       }
 
+      let ref: GitRemoteRef
       try {
-        const ref: GitRemoteRef = new SimpleGitRemoteRef({refname, oid})
+        ref = new SimpleGitRemoteRef({refname, oid})
       } catch (err) {
-        Logger.error(remote ? `${err.message} Remote: \`${remote}\`` : err.message)
+        Logger.error(remote ? `${err} Remote: \`${remote}\`` : err)
         throw err
       }
       Logger.silly(`Parsed ref: \`${ref.refname}\` with oid: \`${ref.oid}\``)
 
-      refs.setRef(ref)
+      refMap.setRef(ref)
     }
 
-    const parsedOutput: GitLsRemoteOutput = {remote, refs}
+    const parsedOutput: GitLsRemoteOutput = {remote, refMap}
     Logger.debug(remote ? `Parsed output for remote: \`${remote}\`` : 'Parsed output')
 
     return parsedOutput

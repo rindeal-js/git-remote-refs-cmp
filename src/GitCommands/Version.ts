@@ -7,17 +7,26 @@
 import {
   GitCommand,
 } from '../GitCommand'
+import {
+  Logger,
+} from '../Logger'
+
+
+export {
+  GitVersionCommand,
+}
 
 
 class GitVersionCommand extends GitCommand {
-  private static readonly versionRegex = /git version (\d+\.\d+\.\d+)/
+  private static readonly versionRegex = /git version (?<version>\d+\.\d+\.\d+)/
 
   public async execute(): Promise<string> {
     const versionOutput = await this.execGit(['version'])
     const versionMatch = versionOutput.match(GitVersionCommand.versionRegex)
-    if ( ! versionMatch ) {
+    if ( ! versionMatch || ! versionMatch.groups ) {
       throw new Error('Unable to determine Git version')
     }
-    return versionMatch[1]
+    Logger.debug(`Git version is \`${versionMatch.groups['version']}\``)
+    return versionMatch.groups['version']
   }
 }

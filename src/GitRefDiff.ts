@@ -1,13 +1,15 @@
 /**
  * SPDX-FileCopyrightText: 2024 Jan Chren ~rindeal
  *
- * SPDX-License: GPL-3.0-only OR GPL-2.0-only
+ * SPDX-License-Identifier: GPL-3.0-only OR GPL-2.0-only
  */
 
 import {
   GitRemoteRef,
-  GitRemoteRefMap,
 } from './GitRemoteRef'
+import {
+  GitRemoteRefMap,
+} from './GitRemoteRefMap'
 import {
   GitRefDiffType,
 } from './GitRefDiffType'
@@ -37,7 +39,7 @@ abstract class GitRefDiffBase implements GitRefDiff {
   public readonly sourceRef?: GitRemoteRef
   public readonly targetRef?: GitRemoteRef
 
-  protected constructor(init: {sourceRefMap: GitRemoteRefMap, targetRefMap: GitRemoteRefMap, sourceRef?: GitRemoteRef, targetRef?: GitRemoteRef}) {
+  public constructor(init: {sourceRefMap: GitRemoteRefMap, targetRefMap: GitRemoteRefMap, sourceRef?: GitRemoteRef, targetRef?: GitRemoteRef}) {
     this.sourceRefMap = init.sourceRefMap
     this.targetRefMap = init.targetRefMap
     this.sourceRef = init.sourceRef

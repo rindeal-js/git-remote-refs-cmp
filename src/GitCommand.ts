@@ -6,7 +6,11 @@
 
 import {
   execFile,
+  // exec,
 } from 'child_process'
+import {
+  Logger
+} from './Logger'
 
 
 export {
@@ -15,13 +19,15 @@ export {
 
 
 abstract class GitCommand {
-  abstract constructor(protected gitPath: string) {}
+  constructor(protected gitPath: string) {}
 
   abstract execute(): Promise<string>
 
   protected execGit(args: string[]): Promise<string> {
     return new Promise((resolve, reject) => {
+      Logger.debug('Executing: ' + [this.gitPath, ...args].map(a => `\`${a}\``).join(' '))
       execFile(this.gitPath, args, (error, stdout) => {
+      // exec(`sleep 10 && ${[this.gitPath, ...args].join(' ')}`, (error, stdout) => {
         if (error) {
           reject(error)
         } else {

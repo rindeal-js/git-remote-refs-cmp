@@ -1,7 +1,7 @@
 /**
  * SPDX-FileCopyrightText: 2024 Jan Chren ~rindeal
  *
- * SPDX-License: GPL-3.0-only OR GPL-2.0-only
+ * SPDX-License-Identifier: GPL-3.0-only OR GPL-2.0-only
  */
 
 import {
@@ -35,10 +35,11 @@ interface GitLsRemoteRefDiff extends GitRefDiff {
 }
 
 abstract class GitLsRemoteRefDiffBase extends GitRefDiffBase implements GitLsRemoteRefDiff {
+  public readonly message
   public readonly sourceRemote: string
   public readonly targetRemote: string
 
-  protected constructor(init: {source: GitLsRemoteOutput, target: GitLsRemoteOutput, sourceRef?: GitRemoteRef, targetRef?: GitRemoteRef}) {
+  public constructor(init: {source: GitLsRemoteOutput, target: GitLsRemoteOutput, sourceRef?: GitRemoteRef, targetRef?: GitRemoteRef}) {
     super({
       sourceRefMap: init.source.refMap,
       targetRefMap: init.target.refMap,
@@ -57,8 +58,8 @@ class GitLsRemoteZeroRefsDiff extends GitLsRemoteRefDiffBase {
   public readonly type: GitRefDiffType = GitRefDiffType.ZERO_REFS
 
   protected _getMessage(): string {
-    const srcLen = this.sourceRefMap.length
-    const dstLen = this.targetRefMap.length
+    const srcLen = this.sourceRefMap.size
+    const dstLen = this.targetRefMap.size
     return `Zero refs: \`${this.sourceRemote}\` has \`${srcLen}\` refs, \`${this.targetRemote}\` has \`${dstLen}\` refs.`
   }
 }
@@ -67,8 +68,8 @@ class GitLsRemoteRefCountMismatchDiff extends GitLsRemoteRefDiffBase {
   public readonly type: GitRefDiffType = GitRefDiffType.REF_COUNT_MISMATCH
 
   protected _getMessage(): string {
-    const srcLen = this.sourceRefMap.length
-    const dstLen = this.targetRefMap.length
+    const srcLen = this.sourceRefMap.size
+    const dstLen = this.targetRefMap.size
     return `Ref count mismatch: \`${this.sourceRemote}\` has \`${srcLen}\` refs, \`${this.targetRemote}\` has \`${dstLen}\` refs.`
   }
 }
