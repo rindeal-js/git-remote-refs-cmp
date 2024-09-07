@@ -5,10 +5,10 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "npx -- tsc --strict --pretty",
-    "test": "npx -- jest --color",
+    "build": "tsc --strict --pretty",
+    "test": "jest --color",
     "lint": "npm run -- lint:eslint",
-    "lint:eslint": "npx -- eslint --color -- src/",
+    "lint:eslint": "eslint --color -- src/",
     "lint:reuse": "pipx run --quiet -- reuse lint"
   },
   "devDependencies": {
