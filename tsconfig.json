@@ -3,6 +3,8 @@
   "compilerOptions": {
     "declaration": true,
     "sourceMap": true,
+    "alwaysStrict": true,
+    "pretty": true,
     "outDir": "./dist"
   },
   "include": ["src/**/*.ts"],
