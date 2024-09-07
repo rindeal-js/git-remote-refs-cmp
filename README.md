@@ -1,14 +1,22 @@
-# 🌟 git-remote-refs-cmp 🌟
+<h1 align=center>📊🔍 git-remote-refs-cmp</h1>
+<p align=center>
+  <strong>
+    🚀 Efficient Git Reference Comparison with ES2023 TypeScript Library 🚀
+  </strong>
+</p>
 
-An efficient TypeScript micro library for comparing remote Git repositories for equality by their references.<br>
-Useful to quickly check (1-2s) if a repository mirror is up to date.
 
-## 🚀 Features
+## ✨ Features
+- **Robust Git Commands**: Execute Git commands seamlessly.
+- **Structured Data Parsing**: Convert `git ls-remote` outputs into concrete objects.
+- **Remote Comparison**: Compare Git references across different remotes.
+- **Detailed Output**: Get comprehensive reports on differences.
 
-- 🔍 Fetch and compare Git references from remote repositories asynchronously.
-- 📊 Identify differences in reference counts, names, and hashes, with detailed messages when encountering differences.
-- ⚠️ Robust input validation and safe command execution.
-- No runtime dependencies
+## 👥 Who Should Use This?
+
+Perfect for developers and DevOps engineers managing git mirrors, this tool offers a fast and efficient way to check your mirrors are up-to-date.
+
+Ready to streamline your Git workflows? 🌟
 
 ## 📦 Installation
 
@@ -18,81 +26,31 @@ Install via npm:
 npm install https://github.com/rindeal-js/git-remote-refs-cmp
 ```
 
-## 🛠️ Quick Start
+## 🚀 Quick Start
 
 ```ts
-import { GitRepo, RefDiffTypes } from 'git-remote-refs-cmp'
+import { gitRemoteRefsCmp } from 'git-remote-refs-cmp'
 
-const sourceRepo = new GitRepo('https://git.launchpad.net/beautifulsoup')
-const targetRepo = new GitRepo('https://github.com/facsimiles/beautifulsoup.git')
-
-(async () => {
-  const diffResult = await sourceRepo.refsDiffer(targetRepo)
-  if (diffResult) {
-    console.log('The repositories differ:')
-    console.log({ message: diffResult.message })
-    console.log({ type: diffResult.type.toString() })
-    // diffResult.sourceRefs
-    // diffResult.targetRefs
-    // diffResult.sourceRef
-    // diffResult.targetRef
-    if (diffResult.type === RefDiffTypes.hashMismatch) {
-      // ...
-    }
+async function compareRemotes() {
+  const sourceRemote = 'https://github.com/source-repo.git'
+  const targetRemote = 'https://github.com/target-repo.git'
+  const diff = await gitRemoteRefsCmp(sourceRemote, targetRemote)
+  if ( diff ) {
+    console.log('Difference found:', diff.message)
   } else {
-    console.log('The repositories are exact clones.')
+    console.log('No differences found.')
   }
-})()
+}
+
+compareRemotes()
 ```
 
-## 📚 API
-
-```ts
-// Represents a Git repository
-class GitRepo {
-  constructor(repoUrl: string)
-  getRefs(): Promise<Ref[]>
-  fetchRefs(): Promise<Ref[]>  // Explicitly fetches references from the remote repository, otherwise lazy load
-  getRefByName(name: string): Promise<Ref | undefined>
-  getRefByHash(hash: string): Promise<Ref | undefined>
-  refsDiffer(targetRepo: GitRepo): Promise<RefDiff | null>  // Return null if refs in both repos are equal, RefDiff instance otherwise
-}
-
-// Represents a Git reference
-interface Ref {
-  name: string
-  hash: string
-}
-
-// Represents the difference between references
-class RefDiff {
-  message: string
-  type: RefDiffTypes
-  sourceRefs: Ref[]
-  targetRefs: Ref[]
-  sourceRef: Ref | null
-  targetRef: Ref | null
-}
-
-// Types of reference differences
-class RefDiffTypes {
-  static refCountMismatch: RefDiffTypes  // A mismatch in the number of references
-  static refNotFound:      RefDiffTypes  // A reference not found in the target repository
-  static hashMismatch:     RefDiffTypes  // A hash mismatch for a reference
-  static criticalError:    RefDiffTypes  // A critical error during comparison
-  name: string
-  constructor(name: string)
-  toString(): string  // Returns the name of the RefDiffTypes instance, eg. `REF_NOT_FOUND`
-}
-```
-
-## Limitations
+## ⚠️ Limitations
 
 - Only remote Git repositories are supported.
-- Only `https://` protocol is supported.
 - No extra credentials handling.
-  - You need to use native Git HTTPS authentication methods if you want to compare private repos.
-- Only equality comparison, it cannot tell you which one is older/newer.
+  - You need to use native Git authentication methods if you want to compare private repos.
+- Only equality comparison, it cannot tell you which one is older/newer etc.
 
 ## 🤝 Contributing
 
