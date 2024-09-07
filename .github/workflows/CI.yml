@@ -30,7 +30,7 @@ jobs:
 
     - name: "Install dependencies"
       run: |
-        npm ci
+        npm clean-install
 
     - name: "Run lint"
       run: |
