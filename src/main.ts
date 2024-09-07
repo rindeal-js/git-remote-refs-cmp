@@ -4,28 +4,54 @@
  * SPDX-License-Identifier: GPL-3.0-only OR GPL-2.0-only
  */
 
-import { Logger } from './logger'
-import { Repo } from './repo'
+import {
+  GitCommandManager,
+} from './GitCommandManager'
+import {
+  GitLsRemoteParser,
+} from './GitLsRemoteParser'
+import {
+  GitLsRemoteOutputCmp,
+} from './GitLsRemoteOutputCmp'
+import {
+  GitLsRemoteOutput,
+} from './GitLsRemoteOutput'
+import {
+  GitLsRemoteRefDiff,
+} from './GitLsRemoteRefDiff'
+import {
+  Logger,
+} from './Logger'
 
 
 if ( require.main === module ) {
   (async () => {
     Logger.logLevel = 'silly'
 
-    const sourceRepo = new Repo('https://git.launchpad.net/beautifulsoup')
-    const targetRepo = new Repo('https://github.com/facsimiles/beautifulsoup.git')
+    git = new GitCommandManager()
+    await git.init()
+    parser = new GitLsRemoteParser()
+    lsRemoteCmp = new GitLsRemoteOutputCmp()
+
+    const [source, target] = Promise.all(
+      [sourceRemote, targetRemote]
+        .map(async (remote) =>
+          parser.parse(await git.lsRemote({remote}), remote)
+        )
+    )
 
     // inject count mismatch fault
-    const sourceRefs = await sourceRepo.getRefs()
-    Logger.debug(`Injected fault by removing ref: \`${sourceRefs.pop()?.name}\``)
+    const refnameToDelete = source.refMap.refnames()[0]
+    source.refMap.delete(refnameToDelete)
+    Logger.debug(`Injected fault by removing ref: \`${refnameToDelete}\``)
 
-    const diffResult = await sourceRepo.refsDiffer(targetRepo)
-    if ( diffResult ) {
-    Logger.info('The repositories differ:')
-    Logger.info(diffResult)
-    Logger.info(diffResult.type.toString())
+    const diff = lsRemoteCmp.compare(source, target)
+    if ( diff ) {
+      Logger.info('The repositories differ:')
+      Logger.info(diff)
+      Logger.info(diff.type.toString())
     } else {
-    Logger.info('The repositories are exact clones.')
+      Logger.info('The repositories are exact clones.')
     }
   })()
 }  
