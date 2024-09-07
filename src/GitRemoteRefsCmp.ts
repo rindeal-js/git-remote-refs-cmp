@@ -38,7 +38,7 @@ class GitRemoteRefsCmp {
   }
 
   private async processRemote(remote: string): Promise<GitLsRemoteOutput> {
-    const rawOutput = await git.lsRemote({remote: sourceRemote})
+    const rawOutput = await this.git.lsRemote({remote: sourceRemote})
     return this.parser.parse(rawOutput, remote)
   }
   
