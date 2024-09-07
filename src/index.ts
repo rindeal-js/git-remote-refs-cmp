@@ -13,6 +13,18 @@ import {
 
 
 export type {
+  GitCommandManager,
+} from './GitCommandManager'
+export type {
+  GitLsRemoteOutput,
+} from './GitLsRemoteOutput'
+export type {
+  GitLsRemoteOutputCmp,
+} from './GitLsRemoteOutputCmp'
+export type {
+  GitLsRemoteParser,
+} from './GitLsRemoteParser'
+export type {
   GitLsRemoteRefDiff,
   GitLsRemoteZeroRefsDiff,
   GitLsRemoteRefCountMismatchDiff,

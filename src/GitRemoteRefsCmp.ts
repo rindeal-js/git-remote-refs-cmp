@@ -41,15 +41,26 @@ class GitRemoteRefsCmp {
     await this.git.init() 
   }
 
+  public isInitialized(): boolean {
+    return this.git.isInitialized()
+  }
+
+  public async ensureIsInitialized() {
+    if ( ! this.isInitialized() ) {
+      await this.init()
+    }
+  }
+
   private async processRemote(remote: string): Promise<GitLsRemoteOutput> {
     const rawOutput = await this.git.lsRemote({ remote })
     return this.parser.parse(rawOutput, remote)
   }
 
   public async compare(sourceRemote: string, targetRemote: string): Promise<GitLsRemoteRefDiff | null> {
-    console.assert(this.git.isInitialized())
-    const promises = [sourceRemote, targetRemote].map(this.processRemote)
-    const [source, target] = await Promise.all(promises)
+    await this.ensureIsInitialized()
+    const [source, target] = await Promise.all(
+      [sourceRemote, targetRemote].map(this.processRemote)
+    )
     return this.lsRemoteCmp.compare(source, target)
   }
 }

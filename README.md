@@ -31,7 +31,7 @@ npm install https://github.com/rindeal-js/git-remote-refs-cmp
 ```ts
 import { gitRemoteRefsCmp } from 'git-remote-refs-cmp'
 
-async function compareRemotes() {
+(async () => {
   const sourceRemote = 'https://github.com/source-repo.git'
   const targetRemote = 'https://github.com/target-repo.git'
   const diff = await gitRemoteRefsCmp(sourceRemote, targetRemote)
@@ -40,9 +40,49 @@ async function compareRemotes() {
   } else {
     console.log('No differences found.')
   }
-}
+})()
+```
 
-compareRemotes()
+## 📚 Additional Examples
+
+Use the `GitRemoteRefsCmp()` object to initialize once and run multiple comparison queries efficiently:
+
+```ts
+import { GitRemoteRefsCmp } from 'git-remote-refs-cmp'
+
+(async () => {
+  const cmp = GitRemoteRefsCmp()
+  cmp.init()
+
+  const diff = cmp.compare(sourceRemote, targetRemote)
+  const diff2 = cmp.compare(sourceRemote2, targetRemote2)
+  ...
+})()
+```
+
+For a lower level access and handling:
+
+```ts
+import {
+  GitCommandManager,
+  GitLsRemoteParser,
+  GitLsRemoteOutputCmp,
+} from 'git-remote-refs-cmp'
+
+(async () => {
+  const git = new GitCommandManager()
+  await git.init()
+  const parser = new GitLsRemoteParser()
+  const lsRemoteCmp = new GitLsRemoteOutputCmp()
+
+  let [source, target] = await Promise.all(
+    [sourceRemote, targetRemote].map(async (remote) =>
+      parser.parse(await git.lsRemote({ remote }), remote)
+    )
+  )
+  let diff = lsRemoteCmp.compare(source, target)
+  ...
+})()
 ```
 
 ## ⚠️ Limitations
@@ -58,4 +98,5 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📜 License
 
-This project is licensed under the _GPL-3.0-only OR GPL-2.0-only_ License. See the [LICENSE.md](./LICENSE.md) file for details.
+This project is licensed under the _GPL-3.0-only OR GPL-2.0-only_ License. See the LICENSE.md file for details.
+
