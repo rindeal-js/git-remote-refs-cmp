@@ -24,7 +24,7 @@ class GitCommandManager {
   protected gitVersion: string = ''
   protected gitPath: string = ''
 
-  public async initialize(): Promise<void> {
+  public async init(): Promise<void> {
     this.gitPath = await which('git')
     const versionCmd = new GitVersionCommand(this.gitPath)
     this.gitVersion = await versionCmd.execute()
