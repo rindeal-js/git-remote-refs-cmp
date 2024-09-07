@@ -26,8 +26,15 @@ class GitCommandManager {
 
   public async init(): Promise<void> {
     this.gitPath = await which('git')
+    if ( ! this.gitPath ) {
+      throw new Error()
+    }
     const versionCmd = new GitVersionCommand(this.gitPath)
     this.gitVersion = await versionCmd.execute()
+  }
+
+  public isInitialized(): boolean {
+    return (!! this.gitPath)
   }
 
   public async lsRemote(options: {
