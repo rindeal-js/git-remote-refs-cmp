@@ -3,5 +3,7 @@
  *
  * SPDX-License-Identifier: GPL-3.0-only OR GPL-2.0-only
  */
-declare const Logger: Console;
-export { Logger, };
+import { Logger as PinoLogger } from 'pino';
+declare let Logger: PinoLogger<never, boolean>;
+declare function setLogger(logger: PinoLogger): void;
+export { Logger, setLogger, };

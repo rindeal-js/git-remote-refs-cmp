@@ -17,8 +17,12 @@
     "@types/jest": "^29.5.12",
     "@types/node": "^22.5.4",
     "eslint": "^9.9.1",
+    "pino-pretty": "^11.2.2",
     "ts-jest": "^29.2.5",
     "typescript": "^5.0.0",
     "typescript-eslint": "^8.4.0"
+  },
+  "dependencies": {
+    "pino": "^9.4.0"
   }
 }

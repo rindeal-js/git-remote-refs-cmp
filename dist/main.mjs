@@ -6,18 +6,43 @@
 import { GitCommandManager, } from './GitCommandManager.mjs';
 import { GitLsRemoteParser, } from './GitLsRemoteParser.mjs';
 import { GitLsRemoteOutputCmp, } from './GitLsRemoteOutputCmp.mjs';
-// import {
-// Logger as libLogger,
-// LogLevel,
-// } from './Logger.mjs'
+import { setLogger as setGitRemoteRefsLogger, } from './Logger.mjs';
 import { GitRemoteRefMap, } from './GitRemoteRefMap.mjs';
 // import { Logger as TsLogger } from 'tslog'
-// if (require.main === module) {
+import { pino } from 'pino';
+import { PinoPretty } from 'pino-pretty';
 (async () => {
     // libLogger.settings.minLevel = LogLevel.Silly
     // const logger = new TsLogger({name: "main", minLevel: LogLevel.Silly})
-    const logger = console;
-    // Logger.logLevel = 'silly'
+    // const logger = console
+    const startTime = performance.now();
+    const levelEmojis = {
+        trace: '🔍',
+        debug: '🐛',
+        info: 'ℹ️',
+        warn: '⚠️',
+        error: '❌',
+        fatal: '💀'
+    };
+    const pretty = PinoPretty({
+        colorize: true,
+        ignore: [
+            'pid',
+            'hostname',
+            'module',
+        ].join(),
+        // @ts-expect-error The custom prettifier extras, currently define only `colors`, not eg. `label` etc.
+        customPrettifiers: {
+            time: () => `+${((performance.now() - startTime) / 1000).toFixed(3)}s`,
+            // @ts-expect-error Throws an erro for some reason
+            level: (_logLevel, _k, _l, { label }) => levelEmojis[label.toLowerCase()] || '❓',
+        }
+    });
+    const logger = pino({
+        level: 'trace',
+    }, pretty);
+    const childLogger = logger.child({ module: '@foo/bar' });
+    setGitRemoteRefsLogger(childLogger);
     const git = new GitCommandManager();
     await git.init();
     const parser = new GitLsRemoteParser();
@@ -64,5 +89,4 @@ import { GitRemoteRefMap, } from './GitRemoteRefMap.mjs';
     const fooOneOutput = { remote: 'foo-one-remote', refMap: new GitRemoteRefMap([{ refname: 'foo', oid: ''.padStart(40, '1') }]) };
     await runSmokeTest('OID_MISMATCH', fooZeroOutput, fooOneOutput);
 })();
-// }
 //# sourceMappingURL=main.mjs.map
