@@ -16,11 +16,17 @@ class GitLsRemoteCommand extends GitCommand {
         if (this.options.branches) {
             args.push('--heads');
         }
-        if (this.options.tags) {
-            args.push('--tags');
-        }
         if (this.options.exitCode) {
             args.push('--exit-code');
+        }
+        if (this.options.getUrl) {
+            args.push('--get-url');
+        }
+        if (this.options.refs) {
+            args.push('--refs');
+        }
+        if (this.options.tags) {
+            args.push('--tags');
         }
         args.push('--');
         if (this.options.remote) {

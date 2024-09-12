@@ -11,17 +11,22 @@ import {
 
 export {
   GitLsRemoteCommand,
+  GitLsRemoteCommandOptions,
 }
 
 
+interface GitLsRemoteCommandOptions {
+  branches?: boolean,
+  exitCode?: boolean,
+  getUrl?: boolean,
+  patterns?: string[]
+  refs?: boolean,
+  remote?: string,
+  tags?: boolean,
+}
+
 class GitLsRemoteCommand extends GitCommand {
-  constructor(gitPath: string, private options: {
-    remote?: string,
-    branches?: boolean,
-    tags?: boolean,
-    exitCode?: boolean,
-    patterns?: string[]
-  }) {
+  constructor(gitPath: string, private options: GitLsRemoteCommandOptions) {
     super(gitPath)
   }
 
@@ -31,11 +36,17 @@ class GitLsRemoteCommand extends GitCommand {
     if (this.options.branches) {
       args.push('--heads')
     }
-    if (this.options.tags) {
-      args.push('--tags')
-    }
     if (this.options.exitCode) {
       args.push('--exit-code')
+    }
+    if (this.options.getUrl) {
+      args.push('--get-url')
+    }
+    if (this.options.refs) {
+      args.push('--refs')
+    }
+    if (this.options.tags) {
+      args.push('--tags')
     }
 
     args.push('--')

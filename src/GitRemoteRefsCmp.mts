@@ -52,7 +52,9 @@ class GitRemoteRefsCmp {
   }
 
   private async processRemote(remote: string): Promise<GitLsRemoteOutput> {
-    const rawOutput = await this.git.lsRemote({ remote })
+    // --refs
+    //   Do not show peeled tags or pseudorefs like HEAD in the output.
+    const rawOutput = await this.git.lsRemote({ remote, refs: true })
     return this.parser.parse(rawOutput, remote)
   }
 

@@ -5,7 +5,8 @@ async function main() {
   const repoUrl2 = 'https://github.com/facsimiles/beautifulsoup.git';
 
   try {
-    const diff = await GitRemoteRefs.compare(repoUrl1, repoUrl2);
+    const remoteRefs = new GitRemoteRefs()
+    const diff = await remoteRefs.compare(repoUrl1, repoUrl2);
     
     
     if ( diff ) {

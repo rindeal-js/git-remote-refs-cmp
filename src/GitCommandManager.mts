@@ -12,6 +12,7 @@ import {
 } from './GitCommands/Version.mjs'
 import {
   GitLsRemoteCommand,
+  GitLsRemoteCommandOptions,
 } from './GitCommands/LsRemote.mjs'
 
 
@@ -37,13 +38,7 @@ class GitCommandManager {
     return (!! this.gitPath)
   }
 
-  public async lsRemote(options: {
-    remote?: string,
-    branches?: boolean,
-    tags?: boolean,
-    exitCode?: boolean,
-    patterns?: string[]
-  }): Promise<string> {
+  public async lsRemote(options: GitLsRemoteCommandOptions): Promise<string> {
     console.assert(this.gitPath)
     const lsRemoteCommand = new GitLsRemoteCommand(this.gitPath, options)
     return lsRemoteCommand.execute()
