@@ -1,8 +1,9 @@
 import { GitRemoteRefs } from './git-remote-refs';
 
 async function main() {
-  const repoUrl1 = 'https://git.launchpad.net/beautifulsoup';
-  const repoUrl2 = 'https://github.com/facsimiles/beautifulsoup.git';
+  const repoUrl1 = 'https://git.launchpad.net/beautifulsoup'
+  // const repoUrl2 = 'https://github.com/facsimiles/beautifulsoup.git'
+  const repoUrl2 = 'https://github.com/git/git.git'
 
   try {
     const remoteRefs = new GitRemoteRefs()

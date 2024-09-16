@@ -3,7 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const git_remote_refs_1 = require("./git-remote-refs");
 async function main() {
     const repoUrl1 = 'https://git.launchpad.net/beautifulsoup';
-    const repoUrl2 = 'https://github.com/facsimiles/beautifulsoup.git';
+    // const repoUrl2 = 'https://github.com/facsimiles/beautifulsoup.git'
+    const repoUrl2 = 'https://github.com/git/git.git';
     try {
         const remoteRefs = new git_remote_refs_1.GitRemoteRefs();
         const diff = await remoteRefs.compare(repoUrl1, repoUrl2);
