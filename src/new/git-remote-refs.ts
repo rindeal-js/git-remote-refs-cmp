@@ -1,68 +1,68 @@
-// @see: https://github.com/facsimiles/turnip/blob/497f8526b52d012684a2d81b03275f0b24096251/turnip/pack/git.py#L35
-const ERROR_PREFIX = 'ERR '
-
+// Type definitions
 type Hex = string
 type Hostname = string
+type RefName = string
 
 type GitRef = {
-  name: string
+  name: RefName
   oid: Hex
-  symref?: string
-  peeled?: string
+  symref?: RefName
+  peeled?: Hex
 }
 
-type ComparisonResult = {
-  inSync: boolean
-  inSyncRefs: GitRef[]
-  outOfSyncRefs: { ref: GitRef; otherOid: Hex }[]
-  missingRefs: { repo: 'A' | 'B'; ref: GitRef }[]
-}
+type RefsMap = Map<RefName, GitRef>
 
 type ServerCapabilities = {
   [key: string]: string[]
 }
 
+type FetchOptions = {
+  gitProtocolVersion?: 0 | 1 | 2
+}
+
+type CompareOptions = {
+  excludePatterns?: RegExp[]
+}
+
+// Error class
 class HttpError extends Error {
-  status: number;
-  statusText: string;
-  headers: Headers;
+  status: number
+  statusText: string
+  headers: Headers
   content: string
 
   constructor(response: Response) {
-    super(`HTTP error! status: ${response.status} ${response.statusText}`);
-    this.status = response.status;
-    this.statusText = response.statusText;
-    this.headers = response.headers;
-    this.content = '';
-
-    // Initialize content asynchronously
-    this.initContent(response);
+    super(`HTTP error! status: ${response.status} ${response.statusText}`)
+    this.status = response.status
+    this.statusText = response.statusText
+    this.headers = response.headers
+    this.content = ''
   }
 
   public async initContent(response: Response) {
     try {
-      const contentType = response.headers.get('Content-Type');
+      const contentType = response.headers.get('Content-Type')
       this.content = contentType?.includes('application/json')
         ? await response.json() as string
-        : await response.text();
+        : await response.text()
     } catch {
-      this.content = '';
+      this.content = ''
     }
   }
 }
 
-
+// GitPacketLine class
 class GitPacketLine {
-  static HEX_LENGTH = 4
-  static FLUSH = new GitPacketLine({ rawLine: '0000', precompile: true })
-  static DELIM = new GitPacketLine({ rawLine: '0001', precompile: true })
-  static COMMAND_LS_REFS = new GitPacketLine({ content: 'command=ls-refs', precompile: true })
-  static UNBORN = new GitPacketLine({ content: 'unborn', precompile: true })
-  static PEEL = new GitPacketLine({ content: 'peel', precompile: true })
-  static SYMREFS = new GitPacketLine({ content: 'symrefs', precompile: true })
+  static readonly HEX_LENGTH = 4
+  static readonly FLUSH = new GitPacketLine({ rawLine: '0000', precompile: true })
+  static readonly DELIM = new GitPacketLine({ rawLine: '0001', precompile: true })
+  static readonly COMMAND_LS_REFS = new GitPacketLine({ content: 'command=ls-refs', precompile: true })
+  static readonly UNBORN = new GitPacketLine({ content: 'unborn', precompile: true })
+  static readonly PEEL = new GitPacketLine({ content: 'peel', precompile: true })
+  static readonly SYMREFS = new GitPacketLine({ content: 'symrefs', precompile: true })
 
-  protected _content: string | null
-  protected _rawLine: string | null
+  private _content: string | null
+  private _rawLine: string | null
 
   constructor(init: { content?: string, rawLine?: string, precompile?: boolean }) {
     if ( init.content == null && init.rawLine == null ) {
@@ -73,42 +73,42 @@ class GitPacketLine {
     this._rawLine = init.rawLine ?? null
 
     if ( init.precompile ) {
-      if (this._rawLine == null && this._content != null) {
+      if ( this._rawLine == null && this._content != null ) {
         this._rawLine = GitPacketLine.serialize(this._content)
-      } else if (this._content == null && this._rawLine != null) {
+      } else if ( this._content == null && this._rawLine != null ) {
         this._content = GitPacketLine.deserialize(this._rawLine)
       }
     }
   }
 
-  public get content(): string {
+  get content(): string {
     if ( this._content == null ) {
-      if ( this._rawLine == null ) throw new Error()
+      if ( this._rawLine == null ) throw new Error('Raw line is null')
       this._content = GitPacketLine.deserialize(this._rawLine)
     }
     return this._content
   }
 
-  public get rawLine(): string {
+  get rawLine(): string {
     if ( this._rawLine == null ) {
-      if ( this._content == null ) throw new Error()
+      if ( this._content == null ) throw new Error('Content is null')
       this._rawLine = GitPacketLine.serialize(this._content)
     }
     return this._rawLine
   }
 
-  public equals(other: GitPacketLine): boolean {
+  equals(other: GitPacketLine): boolean {
     return this.rawLine === other.rawLine
   }
 
-  public static serialize(content: string): string {
+  static serialize(content: string): string {
     const length = GitPacketLine.HEX_LENGTH + content.length + '\n'.length
     return `${length.toString(16).padStart(GitPacketLine.HEX_LENGTH, '0')}${content}\n`
   }
 
-  public static deserialize(rawLine: string): string {
+  static deserialize(rawLine: string): string {
     const length = parseInt(rawLine.slice(0, GitPacketLine.HEX_LENGTH), 16)
-    return rawLine.slice(GitPacketLine.HEX_LENGTH, length)
+    return rawLine.slice(GitPacketLine.HEX_LENGTH, length - 1) // Remove trailing newline
   }
 }
 
@@ -196,25 +196,31 @@ class GitPacketParser {
   }
 }
 
-class GitRemoteRefs {
-  private static USER_AGENT = 'GitRemoteRefs/1.0'
+// Abstract base class for GitRemoteRefsFetcher
+abstract class GitRemoteRefsFetcher {
+  protected static readonly USER_AGENT = 'GitRemoteRefs/1.0'
+  /** @see: https://github.com/facsimiles/turnip/blob/497f8526b52d012684a2d81b03275f0b24096251/turnip/pack/git.py#L35  */
+  protected static readonly ERROR_PREFIX = 'ERR '
+
+  abstract fetchRefs(repoUrl: string | URL, options: FetchOptions): AsyncGenerator<GitRef, void, unknown>
+}
+
+// Renamed to GitSmartHttpRefsFetcher
+class GitSmartHttpRefsFetcher extends GitRemoteRefsFetcher {
   private capabilitiesCache: Map<Hostname, ServerCapabilities> = new Map()
 
-  constructor() {}
-
-  private async sendRequest(url: string, options: { method?: string, contentType?: string, body?: string, gitProtocolVersion?: 0 | 1 | 2 } = {}): Promise<GitPacketLineIterator> {
+  private async sendRequest(url: string, options: FetchOptions & { method?: string, contentType?: string, body?: string } = {}): Promise<GitPacketLineIterator> {
     const headers = {
       'Git-Protocol': `version=${options.gitProtocolVersion ?? 2}`,
-      'User-Agent': GitRemoteRefs.USER_AGENT,
+      'User-Agent': GitRemoteRefsFetcher.USER_AGENT,
       'Cache-Control': 'no-cache, no-store, max-age=0',
       ...(options.contentType && { 'Content-Type': options.contentType })
-    };
+    }
 
     const response = await fetch(url, {
       method: options.method ?? 'GET',
       headers: headers,
       body: options.body ?? null,
-      // cache: 'no-store',  // node doesn't implement any caching as of node20, see https://github.com/nodejs/undici/issues/2760
       referrerPolicy: 'no-referrer',
       mode: 'cors',
     })
@@ -235,20 +241,20 @@ class GitRemoteRefs {
     if ( ! firstPktLine ) {
       throw new Error('Unexpected end of stream')
     }
-    if ( firstPktLine.content.startsWith(ERROR_PREFIX)) {
-      throw new Error(`Server daemon error: \`${firstPktLine.content.slice(ERROR_PREFIX.length)}\``)
+    if ( firstPktLine.content.startsWith(GitRemoteRefsFetcher.ERROR_PREFIX)) {
+      throw new Error(`Server daemon error: \`${firstPktLine.content.slice(GitRemoteRefsFetcher.ERROR_PREFIX.length)}\``)
     }
 
     return packetIterator
   }
 
-  private async fetchServerCapabilities(repoUrl: string | URL): Promise<ServerCapabilities> {
+  private async fetchServerCapabilities(repoUrl: string | URL, options: FetchOptions): Promise<ServerCapabilities> {
     const gitProtocolVersion = 2
 
     const url = new URL(repoUrl)
     url.pathname = `${url.pathname}/info/refs`
     url.search = '?service=git-upload-pack'
-    const lineIter = await this.sendRequest(url.toString(), { method: 'GET', gitProtocolVersion})
+    const lineIter = await this.sendRequest(url.toString(), { ...options, method: 'GET', gitProtocolVersion })
 
     // parse service announcement (if any)
     const firstPacket = await lineIter.peek()
@@ -274,7 +280,6 @@ class GitRemoteRefs {
   private async parseServerCapabilities(packetIterator: GitPacketLineIterator): Promise<ServerCapabilities> {
     const capabilities: ServerCapabilities = { }
 
-    // Parse other capabilities
     for await (const line of packetIterator) {
       if (line.equals(GitPacketLine.FLUSH)) break
 
@@ -282,32 +287,30 @@ class GitRemoteRefs {
       capabilities[key] = value?.split(/\s+/) || []
     }
 
-    console.log({capabilities})
-
     return capabilities
   }
 
-  private async getServerCapabilities(repoUrl: string | URL): Promise<ServerCapabilities> {
+  private async getServerCapabilities(repoUrl: string | URL, options: FetchOptions): Promise<ServerCapabilities> {
     const hostname = new URL(repoUrl).hostname as Hostname
     if ( ! this.capabilitiesCache.has(hostname) ) {
-      const capabilities = await this.fetchServerCapabilities(repoUrl)
+      const capabilities = await this.fetchServerCapabilities(repoUrl, options)
       this.capabilitiesCache.set(hostname, capabilities)
     }
     return this.capabilitiesCache.get(hostname)!
   }
 
-  private async* lsRefs(repoUrl: string | URL): AsyncGenerator<GitRef, void, unknown> {
+  async *fetchRefs(repoUrl: string | URL, options: FetchOptions): AsyncGenerator<GitRef, void, unknown> {
     const url = new URL(repoUrl)
-    const capabilities = await this.getServerCapabilities(url)
+    const capabilities = await this.getServerCapabilities(url, options)
     url.pathname = `${url.pathname}/git-upload-pack`
 
-    if ( ! capabilities['ls-refs'] ) {
+    if ( !capabilities['ls-refs'] ) {
       throw new Error('Server does not support ls-refs command')
     }
 
     const packetLines: GitPacketLine[] = [
       GitPacketLine.COMMAND_LS_REFS,
-      new GitPacketLine({content: `agent=${GitRemoteRefs.USER_AGENT}`}),
+      new GitPacketLine({content: `agent=${GitRemoteRefsFetcher.USER_AGENT}`}),
     ]
 
     if ( capabilities['object-format'] ) {
@@ -319,8 +322,6 @@ class GitRemoteRefs {
     if ( capabilities['ls-refs'].includes('unborn') ) {
       packetLines.push(GitPacketLine.UNBORN)
     }
-    // packetLines.push(GitPacketLine.PEEL) // will add `peeled:...`
-    // packetLines.push(GitPacketLine.SYMREFS)  // will add `symref-target` like this: HEAD symref-target:refs/heads/master
 
     packetLines.push(GitPacketLine.FLUSH)
 
@@ -329,81 +330,108 @@ class GitRemoteRefs {
     const lineIter = await this.sendRequest(url.toString(), {
       method: 'POST',
       contentType: 'application/x-git-upload-pack-request',
-      body: requestBody
+      body: requestBody,
+      ...options
     })
 
     for await (const line of lineIter) {
-      const ref = GitRemoteRefs.parseRef(line.content)
-      if (ref) yield ref
+      const ref = this.parseRef(line.content)
+      if ( ref ) yield ref
     }
   }
 
-  private static parseRef(line: string): GitRef | null {
+  private parseRef(line: string): GitRef | null {
     const [oid, name, ...rest] = line.split(' ')
-    if (!oid || !name) return null
+    if ( !oid || !name ) return null
 
     const ref: GitRef = { name, oid }
     rest.forEach(part => {
-      if (part.startsWith('symref-target:')) {
-        ref.symref = part.split(':')[1]
-      } else if (part.startsWith('peeled:')) {
-        ref.peeled = part.split(':')[1]
+      if ( part.startsWith('symref-target:') ) {
+        ref.symref = part.split(':')[1] as RefName
+      } else if ( part.startsWith('peeled:') ) {
+        ref.peeled = part.split(':')[1] as Hex
       }
     })
 
     return ref
   }
+}
 
-  private static compareRefs(refsA: GitRef[], refsB: GitRef[]): ComparisonResult {
-    const refMapA = new Map(refsA.map(ref => [ref.name, ref]));
-    const refMapB = new Map(refsB.map(ref => [ref.name, ref]));
-
-    const inSyncRefs: GitRef[] = [];
-    const outOfSyncRefs: { ref: GitRef, otherOid: Hex }[] = [];
-    const missingRefs: { repo: 'A' | 'B', ref: GitRef }[] = [];
-
-    for (const [name, refA] of refMapA.entries()) {
-      const refB = refMapB.get(name);
-      if (refB) {
-        if (refA.oid === refB.oid) {
-          inSyncRefs.push(refA);
-        } else {
-          outOfSyncRefs.push({ ref: refA, otherOid: refB.oid });
-        }
-        refMapB.delete(name);
-      } else {
-        missingRefs.push({ repo: 'B', ref: refA });
-      }
-    }
-
-    for (const refB of refMapB.values()) {
-      missingRefs.push({ repo: 'A', ref: refB });
-    }
-
-    const inSync = outOfSyncRefs.length === 0 && missingRefs.length === 0;
-
-    return { inSync, inSyncRefs, outOfSyncRefs, missingRefs };
+// Function to create RefsMap
+async function createRefsMap(refGenerator: AsyncGenerator<GitRef, void, unknown>): Promise<RefsMap> {
+  const refsMap: RefsMap = new Map()
+  for await (const ref of refGenerator) {
+    refsMap.set(ref.name, ref)
   }
+  return refsMap
+}
 
-  public async compare(repoUrlA: string, repoUrlB: string): Promise<ComparisonResult | null> {
-    const refsA: GitRef[] = [];
-    const refsB: GitRef[] = [];
-    
-    const collectRefs = async (repoUrl: string, refs: GitRef[]) => {
-      for await (const ref of this.lsRefs(repoUrl)) {
-        refs.push(ref)
+// GitRefDiff and ComparisonResult types (unchanged)
+type GitRefDiff = {
+  name: RefName
+  base: GitRef
+  updated: GitRef
+}
+
+type ComparisonResult = {
+  diffFound: boolean
+  unchanged: GitRef[]
+  changed: GitRefDiff[]
+  added: GitRef[]
+  removed: GitRef[]
+}
+
+// Redesigned GitRemoteRefsComparer class with improved efficiency
+class GitRemoteRefsComparer {
+  static compare(baseRefs: RefsMap, updatedRefs: RefsMap, options: CompareOptions = {}): ComparisonResult {
+    const { excludePatterns = [] } = options
+    const isRefNameExcluded = (name: string): boolean => excludePatterns.some(pattern => pattern.test(name))
+
+    const unchanged: GitRef[] = []
+    const changed: GitRefDiff[] = []
+    const added: GitRef[] = []
+    const removed: GitRef[] = []
+
+    for ( const [name, baseRef] of baseRefs ) {
+      if ( isRefNameExcluded(name) ) {
+        continue
+      }
+
+      const updatedRef = updatedRefs.get(name)
+      if ( updatedRef ) {
+        if ( baseRef.oid === updatedRef.oid ) {
+          unchanged.push(baseRef)
+        } else {
+          changed.push({ name, base: baseRef, updated: updatedRef })
+        }
+      } else {
+        removed.push(baseRef)
       }
     }
-    
-    await Promise.all([
-      collectRefs(repoUrlA, refsA),
-      collectRefs(repoUrlB, refsB),
-    ])
 
-    const comparison = GitRemoteRefs.compareRefs(refsA, refsB);
+    for ( const [name, updatedRef] of updatedRefs ) {
+      if ( ! baseRefs.has(name) && ! isRefNameExcluded(name) ) {
+        added.push(updatedRef)
+      }
+    }
 
-    return comparison.inSync ? null : comparison;
+    const diffFound = !! ( changed.length || added.length || removed.length )
+
+    return { diffFound, unchanged, changed, added, removed }
   }
 }
 
-export { GitRemoteRefs, GitRef, ComparisonResult, GitPacketLine };
+export { 
+  GitRemoteRefsFetcher as AbstractGitRemoteRefsFetcher,
+  GitSmartHttpRefsFetcher,
+  createRefsMap,
+  GitRemoteRefsComparer,
+  GitRef,
+  RefsMap,
+  ComparisonResult,
+  GitRefDiff,
+  FetchOptions,
+  CompareOptions,
+  RefName,
+  Hex
+}
