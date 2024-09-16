@@ -8,6 +8,7 @@ type GitRef = {
   name: string
   oid: Hex
   symref?: string
+  peeled?: string
 }
 
 type ComparisonResult = {
@@ -25,14 +26,14 @@ class HttpError extends Error {
   status: number;
   statusText: string;
   headers: Headers;
-  content: any;
+  content: string
 
   constructor(response: Response) {
     super(`HTTP error! status: ${response.status} ${response.statusText}`);
     this.status = response.status;
     this.statusText = response.statusText;
     this.headers = response.headers;
-    this.content = null;
+    this.content = '';
 
     // Initialize content asynchronously
     this.initContent(response);
@@ -42,7 +43,7 @@ class HttpError extends Error {
     try {
       const contentType = response.headers.get('Content-Type');
       this.content = contentType?.includes('application/json')
-        ? await response.json()
+        ? await response.json() as string
         : await response.text();
     } catch {
       this.content = '';
@@ -97,7 +98,6 @@ class GitPacketLine {
   }
 
   public equals(other: GitPacketLine): boolean {
-    // console.log({equals: '', this: this.rawLine, other: other.rawLine, result: this.rawLine === other.rawLine})
     return this.rawLine === other.rawLine
   }
 
@@ -296,7 +296,7 @@ class GitRemoteRefs {
     return this.capabilitiesCache.get(hostname)!
   }
 
-  private async* sendLsRefsCommand(repoUrl: string | URL): AsyncGenerator<GitRef, void, unknown> {
+  private async* lsRefs(repoUrl: string | URL): AsyncGenerator<GitRef, void, unknown> {
     const url = new URL(repoUrl)
     const capabilities = await this.getServerCapabilities(url)
     url.pathname = `${url.pathname}/git-upload-pack`
@@ -346,14 +346,12 @@ class GitRemoteRefs {
     rest.forEach(part => {
       if (part.startsWith('symref-target:')) {
         ref.symref = part.split(':')[1]
+      } else if (part.startsWith('peeled:')) {
+        ref.peeled = part.split(':')[1]
       }
     })
 
     return ref
-  }
-  
-  public async* lsRefs(repoUrl: string): AsyncGenerator<GitRef, void, unknown> {
-    yield* this.sendLsRefsCommand(repoUrl);
   }
 
   private static compareRefs(refsA: GitRef[], refsB: GitRef[]): ComparisonResult {

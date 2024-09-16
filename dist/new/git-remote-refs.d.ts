@@ -3,6 +3,7 @@ type GitRef = {
     name: string;
     oid: Hex;
     symref?: string;
+    peeled?: string;
 };
 type ComparisonResult = {
     inSync: boolean;
@@ -45,9 +46,8 @@ declare class GitRemoteRefs {
     private fetchServerCapabilities;
     private parseServerCapabilities;
     private getServerCapabilities;
-    private sendLsRefsCommand;
+    private lsRefs;
     private static parseRef;
-    lsRefs(repoUrl: string): AsyncGenerator<GitRef, void, unknown>;
     private static compareRefs;
     compare(repoUrlA: string, repoUrlB: string): Promise<ComparisonResult | null>;
 }

@@ -13,7 +13,7 @@ class HttpError extends Error {
         this.status = response.status;
         this.statusText = response.statusText;
         this.headers = response.headers;
-        this.content = null;
+        this.content = '';
         // Initialize content asynchronously
         this.initContent(response);
     }
@@ -71,7 +71,6 @@ class GitPacketLine {
         return this._rawLine;
     }
     equals(other) {
-        // console.log({equals: '', this: this.rawLine, other: other.rawLine, result: this.rawLine === other.rawLine})
         return this.rawLine === other.rawLine;
     }
     static serialize(content) {
@@ -241,7 +240,7 @@ class GitRemoteRefs {
         }
         return this.capabilitiesCache.get(hostname);
     }
-    async *sendLsRefsCommand(repoUrl) {
+    async *lsRefs(repoUrl) {
         const url = new URL(repoUrl);
         const capabilities = await this.getServerCapabilities(url);
         url.pathname = `${url.pathname}/git-upload-pack`;
@@ -259,8 +258,8 @@ class GitRemoteRefs {
         if (capabilities['ls-refs'].includes('unborn')) {
             packetLines.push(GitPacketLine.UNBORN);
         }
-        packetLines.push(GitPacketLine.PEEL);
-        packetLines.push(GitPacketLine.SYMREFS); // will add `symref-target` like this: HEAD symref-target:refs/heads/master
+        // packetLines.push(GitPacketLine.PEEL) // will add `peeled:...`
+        // packetLines.push(GitPacketLine.SYMREFS)  // will add `symref-target` like this: HEAD symref-target:refs/heads/master
         packetLines.push(GitPacketLine.FLUSH);
         const requestBody = packetLines.map(line => line.rawLine).join('');
         const lineIter = await this.sendRequest(url.toString(), {
@@ -283,11 +282,11 @@ class GitRemoteRefs {
             if (part.startsWith('symref-target:')) {
                 ref.symref = part.split(':')[1];
             }
+            else if (part.startsWith('peeled:')) {
+                ref.peeled = part.split(':')[1];
+            }
         });
         return ref;
-    }
-    async *lsRefs(repoUrl) {
-        yield* this.sendLsRefsCommand(repoUrl);
     }
     static compareRefs(refsA, refsB) {
         const refMapA = new Map(refsA.map(ref => [ref.name, ref]));

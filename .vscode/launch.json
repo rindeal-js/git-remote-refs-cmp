@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Build and Start Script",
+      "type": "node",
+      "request": "launch",
+      "preLaunchTask": "npm: build",
+      "program": "${workspaceFolder}/dist/new/git-remote-refs-main.js",
+      "cwd": "${workspaceFolder}",
+      "console": "externalTerminal",
+      "internalConsoleOptions": "neverOpen"
+    }
+  ]
+}
