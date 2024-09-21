@@ -1,54 +1,49 @@
 type Hex = string;
+type RefName = string;
 type GitRef = {
-    name: string;
+    name: RefName;
     oid: Hex;
-    symref?: string;
-    peeled?: string;
+    symref?: RefName;
+    peeled?: Hex;
 };
-type ComparisonResult = {
-    inSync: boolean;
-    inSyncRefs: GitRef[];
-    outOfSyncRefs: {
-        ref: GitRef;
-        otherOid: Hex;
-    }[];
-    missingRefs: {
-        repo: 'A' | 'B';
-        ref: GitRef;
-    }[];
+type RefsMap = Map<RefName, GitRef>;
+type FetchOptions = {
+    gitProtocolVersion?: 0 | 1 | 2;
 };
-declare class GitPacketLine {
-    static HEX_LENGTH: number;
-    static FLUSH: GitPacketLine;
-    static DELIM: GitPacketLine;
-    static COMMAND_LS_REFS: GitPacketLine;
-    static UNBORN: GitPacketLine;
-    static PEEL: GitPacketLine;
-    static SYMREFS: GitPacketLine;
-    protected _content: string | null;
-    protected _rawLine: string | null;
-    constructor(init: {
-        content?: string;
-        rawLine?: string;
-        precompile?: boolean;
-    });
-    get content(): string;
-    get rawLine(): string;
-    equals(other: GitPacketLine): boolean;
-    static serialize(content: string): string;
-    static deserialize(rawLine: string): string;
+declare abstract class GitRemoteRefsFetcher {
+    protected static readonly USER_AGENT = "GitRemoteRefs/1.0";
+    /** @see: https://github.com/facsimiles/turnip/blob/497f8526b52d012684a2d81b03275f0b24096251/turnip/pack/git.py#L35  */
+    protected static readonly ERROR_PREFIX = "ERR ";
+    abstract fetchRefs(repoUrl: string | URL, options: FetchOptions): AsyncGenerator<GitRef, void, unknown>;
+    fetchRefsAsMap(repoUrl: string | URL, options?: FetchOptions): Promise<RefsMap>;
+    multiFetchRefsAsMap(requests: {
+        url: string | URL;
+        options?: FetchOptions;
+    }[]): Promise<RefsMap[]>;
 }
-declare class GitRemoteRefs {
-    private static USER_AGENT;
+declare class GitSmartHttpRefsFetcher extends GitRemoteRefsFetcher {
     private capabilitiesCache;
-    constructor();
     private sendRequest;
     private fetchServerCapabilities;
-    private parseServerCapabilities;
     private getServerCapabilities;
-    private lsRefs;
-    private static parseRef;
-    private static compareRefs;
-    compare(repoUrlA: string, repoUrlB: string): Promise<ComparisonResult | null>;
+    fetchRefs(repoUrl: string | URL, options?: FetchOptions): AsyncGenerator<GitRef, void, unknown>;
+    private parseRef;
 }
-export { GitRemoteRefs, GitRef, ComparisonResult, GitPacketLine };
+declare function createRefsMap(refGenerator: AsyncGenerator<GitRef, void, unknown>): Promise<RefsMap>;
+type GitChangedRef = {
+    name: RefName;
+    base: GitRef;
+    other: GitRef;
+};
+type GitRefsDiffResult = {
+    unchanged: GitRef[];
+    changed: GitChangedRef[];
+    added: GitRef[];
+    removed: GitRef[];
+};
+type GitRemoteRefsDiffOptions = {
+    /** Refs with names matching any of these patterns will be excluded from comparison */
+    excludes?: RegExp[];
+};
+declare function gitRemoteRefsDiff(baseRefs: RefsMap, otherRefs: RefsMap, options?: GitRemoteRefsDiffOptions): GitRefsDiffResult | null;
+export { GitRemoteRefsFetcher as AbstractGitRemoteRefsFetcher, GitSmartHttpRefsFetcher, createRefsMap, gitRemoteRefsDiff, GitRef, RefsMap, GitRefsDiffResult as ComparisonResult, GitChangedRef as GitRefDiff, FetchOptions, GitRemoteRefsDiffOptions as CompareOptions, RefName, Hex };
