@@ -1,12 +1,12 @@
 class BufferedAsyncIterator<T> implements AsyncIterableIterator<T> {
-    private buffer: T[] = []
-    private done = false
+    protected buffer: T[] = []
+    protected done = false
 
     public constructor(private iterator: AsyncIterator<T>) {}
 
     public async next(): Promise<IteratorResult<T, undefined>> {
         if ( this.buffer.length ) {
-            return { value: this.buffer.shift() as T, done: false }
+            return { value: this.buffer.shift()!, done: false }
         }
         if ( this.done ) {
             return { value: undefined, done: true }
@@ -18,16 +18,20 @@ class BufferedAsyncIterator<T> implements AsyncIterableIterator<T> {
         return result
     }
 
-    public async peek(): Promise<T | undefined> {
+    public async peek(): Promise<IteratorResult<T, undefined>> {
         if ( this.buffer.length > 0 ) {
-            return this.buffer[0]
+            return { value: this.buffer[0], done: false }
         }
         const result = await this.next()
         if ( result.done ) {
-            return undefined
+            return { value: undefined, done: true }
         }
         this.buffer.unshift(result.value)
-        return result.value
+        return { value: result.value, done: false }
+    }    
+
+    public clearBuffer() {
+        this.buffer.length = 0
     }
 
     [Symbol.asyncIterator](): BufferedAsyncIterator<T> {

@@ -19,57 +19,7 @@ class
 class ServerCapabilitiesCache {
     private fetchServerCapabilitiesPromises: Map<Hostname, Promise<ServerCapabilities>> = new Map()
 
-    private async fetchServerCapabilities(repoUrl: string | URL): Promise<ServerCapabilities> {
-        const gitProtocolVersion = 2
 
-        const url = new URL(repoUrl)
-        url.pathname = `${url.pathname}/info/refs`
-        url.search = '?service=git-upload-pack'
-
-        const lineIt = await this.fetchLinesV2(new Request(url))
-
-        // parse service announcement (if any)
-        const firstPktLine = await lineIt.peek()
-        if ( ! firstPktLine ) {
-            throw new Error('Unexpected end of stream when peeking first packet')
-        } else if ( firstPktLine.content === '# service=git-upload-pack' ) {
-            await lineIt.next() // Consume the peeked packet
-            const flushPktItRes = await lineIt.next()
-            if ( flushPktItRes.done ) {
-                throw new Error(`Invalid service announcement packet: missing flush`)
-            }
-            if ( ! flushPktItRes.value.equals(GitPacketLine.FLUSH) ) {
-                throw new Error(`Invalid service announcement packet: expected flush, received: \`${flushPktItRes.value.rawLine}\``)
-            }
-        }
-
-        // Parse version
-        const versionPktItRes = await lineIt.next()
-        if ( versionPktItRes.done || versionPktItRes.value.content !== `version ${gitProtocolVersion}` ) {
-            throw new Error(
-                `Invalid/unsupported version line in capabilities packet` +
-                (versionPktItRes.done ? '' : `: \`${versionPktItRes.value.rawLine}\``)
-            )
-        }
-
-        const capabilities: ServerCapabilities = { }
-
-        const keyRegex = /^[A-Za-z0-9-_]+$/
-        const valueRegex = /^A-Za-z0-9 \-_.?,\/{}[\<>!@#$%^&*+=:;]+$/
-
-        for await (const line of lineIt) {
-            if (line.equals(GitPacketLine.FLUSH)) break
-
-            const [key, value] = line.content.split('=', 2)
-            if ( keyRegex.test(key) && valueRegex.test(value) ) {
-                capabilities[key] = value?.split(/\s+/) || []
-            } else {
-
-            }
-        }
-
-        return capabilities
-    }
 
     private async getServerCapabilities(repoUrl: string | URL | Hostname): Promise<ServerCapabilities> {
         const hostname = new URL(repoUrl).hostname as Hostname
